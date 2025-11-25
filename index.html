@@ -6,10 +6,27 @@
     <title>HALOMOTION | Cinematic Production</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'halo-red': '#dc2626',
+                        'halo-black': '#050505',
+                        'halo-dark': '#0a0a0a'
+                    },
+                    fontFamily: {
+                        'sans': ['Cormorant Garamond', 'serif'],
+                        'display': ['Syncopate', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -34,47 +51,73 @@
             font-family: 'Cormorant Garamond', serif;
             overflow-x: hidden;
             width: 100%;
-            -webkit-font-smoothing: antialiased;
-            /* FONTOS: Alapból legyen látható a kurzor! Csak JS-el rejtjük el később. */
-            cursor: default; 
-        }
-
-        /* Ha a JS betöltött és mozog az egér, akkor rejtjük el a rendszert */
-        body.custom-cursor-active {
             cursor: none;
         }
 
-        .font-display { font-family: 'Syncopate', sans-serif; }
-
-        /* --- CURSOR STYLES --- */
-        .cursor-dot, .cursor-outline {
+        /* --- PRELOADER --- */
+        #preloader {
             position: fixed;
             top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .loader-bar-bg {
+            width: 200px;
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-bar {
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            width: 0%;
+            background: #fff;
+        }
+        .counter {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 80px;
+            font-weight: 700;
+            color: #111;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.2);
+            line-height: 1;
+        }
+
+        /* --- CURSOR --- */
+        .cursor-dot {
+            position: fixed;
+            top: 0; left: 0;
+            width: 6px; height: 6px;
+            background-color: white;
             border-radius: 50%;
             pointer-events: none;
-            z-index: 99999; /* Legfelső réteg! */
+            z-index: 100000;
             transform: translate(-50%, -50%);
-            display: none; /* Alapból nincs a DOM-ban vizuálisan */
+            mix-blend-mode: exclusion;
+        }
+        .cursor-outline {
+            position: fixed;
+            top: 0; left: 0;
+            width: 40px; height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100000;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: exclusion;
         }
 
-        /* Csak desktopon jelenjen meg */
-        @media (min-width: 1024px) {
-            .cursor-dot {
-                display: block;
-                width: 8px; height: 8px;
-                background-color: white;
-                opacity: 0; /* JS kapcsolja be */
-            }
-            .cursor-outline {
-                display: block;
-                width: 40px; height: 40px;
-                border: 1px solid rgba(255, 255, 255, 0.4);
-                opacity: 0; /* JS kapcsolja be */
-                transition: width 0.2s, height 0.2s, background-color 0.2s;
-            }
-        }
-
-        /* Video Modal */
+        /* --- ELEMENTS --- */
         #hero-video-container {
             position: absolute;
             top: 0; left: 0;
@@ -82,25 +125,24 @@
             overflow: hidden;
             z-index: 0;
         }
-
         #hero-video {
             width: 100%; height: 100%;
             object-fit: cover;
-            opacity: 0.6;
-            filter: grayscale(100%) contrast(1.1);
+            opacity: 0.5;
+            filter: grayscale(100%) contrast(1.2);
+            transform: scale(1.1);
         }
 
-        /* WebGL Container */
         #canvas-container {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 0;
-            opacity: 0.4;
+            z-index: -1;
+            opacity: 0.2;
             pointer-events: none;
         }
 
-        /* Horizontal/Vertical Layout */
+        /* Horizontal Scroll */
         .horizontal-section {
             width: 100%;
             height: auto;
@@ -108,7 +150,6 @@
             flex-direction: column;
             overflow: hidden;
         }
-        
         .panel {
             width: 100%;
             height: 100vh;
@@ -121,7 +162,6 @@
             background: #050505;
             flex-shrink: 0;
         }
-
         @media (min-width: 768px) {
             .horizontal-section {
                 width: 300%;
@@ -138,158 +178,151 @@
             }
         }
 
-        /* Hover Reveal */
+        /* Work Hover Reveal */
         .hover-reveal {
             position: fixed;
-            width: 300px; height: 180px;
+            width: 400px; height: 250px;
             top: 0; left: 0;
             pointer-events: none;
             opacity: 0;
-            z-index: 20;
+            z-index: 50;
             background-size: cover;
             background-position: center;
             transform: translate(-50%, -50%) scale(0.8);
-            filter: grayscale(100%);
-            mix-blend-mode: exclusion;
-        }
-        
-        @media (min-width: 768px) {
-            .hover-reveal { width: 400px; height: 250px; }
+            border-radius: 4px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        /* Team Section Styles */
-        .team-image-container {
-            filter: grayscale(100%);
-            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .team-card:hover .team-image-container {
-            filter: grayscale(0%);
-            transform: scale(0.98);
-        }
-        .team-card:hover .team-img {
-            transform: scale(1.1);
-        }
-
-        /* Grain */
+        /* Visual Grain (No Audio) */
         .grain {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.07'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
             pointer-events: none;
             z-index: 9900;
+            opacity: 0.35;
         }
 
-        .progress-bar {
-            position: fixed;
-            top: 0; left: 0;
-            height: 2px;
-            background: #fff;
-            width: 0%;
-            z-index: 10000;
-        }
-
-        /* Mobile Menu */
-        #mobile-menu {
-            transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);
-            transform: translateY(-100%);
-        }
-        #mobile-menu.open {
-            transform: translateY(0%);
-        }
-        .mobile-link { opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
-        #mobile-menu.open .mobile-link { opacity: 1; transform: translateY(0); }
+        .magnetic-wrap { display: inline-block; position: relative; z-index: 50; }
+        .char-wrap { display: inline-block; overflow: hidden; }
+        .char { display: inline-block; transform: translateY(100%); }
     </style>
 </head>
-<body class="antialiased selection:bg-red-900 selection:text-white">
+<body class="antialiased selection:bg-red-900 selection:text-white bg-halo-black text-gray-200">
 
-    <div id="video-modal" class="fixed inset-0 z-[10000] bg-black/95 hidden flex flex-col justify-center items-center opacity-0 transition-opacity duration-500">
-        <button id="close-modal" class="absolute top-4 right-4 text-white font-display text-xs tracking-widest z-50 hover:text-red-500 transition-colors border border-white/20 rounded-full w-12 h-12 flex items-center justify-center bg-black">✕</button>
-        <div class="w-full max-w-6xl aspect-video bg-black relative shadow-2xl border-y border-white/10">
+    <div id="preloader">
+        <div class="loader-text font-display text-xs tracking-[0.5em] uppercase text-white mb-4">
+            Loading Experience
+        </div>
+        <div class="loader-bar-bg">
+            <div class="loader-bar"></div>
+        </div>
+        <div class="counter">0%</div>
+    </div>
+
+    <div id="video-modal" class="fixed inset-0 z-[10000] bg-black/95 hidden flex flex-col justify-center items-center opacity-0">
+        <button id="close-modal" class="absolute top-8 right-8 text-white font-display text-xs tracking-widest z-50 hover:text-red-500 transition-colors border border-white/20 rounded-full w-14 h-14 flex items-center justify-center bg-black magnetic-btn">✕</button>
+        <div class="w-full max-w-7xl aspect-video bg-black relative shadow-2xl border-y border-white/10">
             <video id="modal-video" class="w-full h-full object-cover" controls playsinline>
                 <source src="" type="video/mp4">
             </video>
         </div>
-        <div id="modal-title" class="mt-8 text-xl md:text-2xl font-display text-white tracking-widest uppercase px-4 text-center"></div>
+        <div id="modal-title" class="mt-8 text-xl md:text-3xl font-display text-white tracking-widest uppercase px-4 text-center"></div>
     </div>
 
     <div class="grain"></div>
-    <div class="progress-bar"></div>
-    
+    <div id="canvas-container"></div>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
 
     <nav class="fixed top-0 left-0 w-full flex justify-between items-center p-6 md:p-8 z-[9950] mix-blend-difference text-white">
-        <a href="#" class="font-display font-bold text-lg md:text-xl tracking-widest uppercase hover:text-red-500 transition-colors z-[9960]">HALOMOTION</a>
+        <a href="#" class="font-display font-bold text-lg md:text-xl tracking-widest uppercase z-[9960] magnetic-wrap">
+            <span class="magnetic-item block">HALOMOTION</span>
+        </a>
         <div class="hidden md:flex gap-12 font-display text-xs tracking-[0.2em]">
-            <a href="#services" class="hover:text-red-500 transition-colors">Szolgáltatások</a>
-            <a href="#work" class="hover:text-red-500 transition-colors">Referenciák</a>
-            <a href="#team" class="hover:text-red-500 transition-colors">Csapat</a>
-            <a href="#contact" class="hover:text-red-500 transition-colors">Kapcsolat</a>
+            <a href="#services" class="hover:text-red-500 transition-colors magnetic-wrap"><span class="magnetic-item block">Szolgáltatások</span></a>
+            <a href="#work" class="hover:text-red-500 transition-colors magnetic-wrap"><span class="magnetic-item block">Munkáink</span></a>
+            <a href="#team" class="hover:text-red-500 transition-colors magnetic-wrap"><span class="magnetic-item block">Csapat</span></a>
+            <a href="#contact" class="hover:text-red-500 transition-colors magnetic-wrap"><span class="magnetic-item block">Kapcsolat</span></a>
         </div>
         <button id="menu-btn" class="md:hidden z-[9960] text-white font-display text-xs tracking-widest border border-white/30 px-4 py-2 rounded-full uppercase bg-black/50 backdrop-blur-sm">MENU</button>
     </nav>
 
-    <div id="mobile-menu" class="fixed inset-0 bg-black z-[9900] flex flex-col justify-center items-center md:hidden">
+    <div id="mobile-menu" class="fixed inset-0 bg-black z-[9900] flex flex-col justify-center items-center md:hidden translate-y-full transition-transform duration-700 ease-[cubic-bezier(0.7,0,0.3,1)]">
         <div class="flex flex-col gap-8 text-center">
-            <a href="#services" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 transition-colors" style="transition-delay: 0.1s">Szolgáltatások</a>
-            <a href="#work" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 transition-colors" style="transition-delay: 0.2s">Munkáink</a>
-            <a href="#team" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 transition-colors" style="transition-delay: 0.25s">Csapat</a>
-            <a href="#method" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 transition-colors" style="transition-delay: 0.3s">Filozófia</a>
-            <a href="#contact" class="mobile-link font-display text-3xl font-bold tracking-wider text-red-600 transition-colors" style="transition-delay: 0.4s">Kapcsolat</a>
+            <a href="#services" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 transition-colors opacity-0 translate-y-4">Szolgáltatások</a>
+            <a href="#work" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 transition-colors opacity-0 translate-y-4">Munkáink</a>
+            <a href="#team" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 transition-colors opacity-0 translate-y-4">Csapat</a>
+            <a href="#contact" class="mobile-link font-display text-3xl font-bold tracking-wider text-red-600 transition-colors opacity-0 translate-y-4">Kapcsolat</a>
         </div>
     </div>
 
     <section class="relative h-screen flex flex-col justify-center items-center text-center px-4 z-10 overflow-hidden">
         <div id="hero-video-container">
             <video id="hero-video" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1000">
-                <source src="https://videos.pexels.com/video-files/5527787/5527787-uhd_2560_1440_25fps.mp4" type="video/mp4">
+                <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4">
             </video>
-            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/10 to-black"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-halo-black"></div>
         </div>
         <div class="relative z-10 flex flex-col items-center w-full mt-10">
-            <div class="flex items-center gap-4 mb-6 opacity-0 animate-fade-in-up" style="animation: fadeInUp 1s forwards 0.5s;">
+            <div class="flex items-center gap-4 mb-6 reveal-opacity">
                 <div class="w-12 h-[1px] bg-red-600"></div>
-                <h2 class="hero-text text-[10px] md:text-sm font-display tracking-[0.4em] text-gray-300 uppercase">Cinematic Agency</h2>
+                <h2 class="text-[10px] md:text-sm font-display tracking-[0.4em] text-gray-300 uppercase">Cinematic Agency</h2>
                 <div class="w-12 h-[1px] bg-red-600"></div>
             </div>
-            <h1 class="font-display text-[14vw] md:text-9xl font-bold leading-[0.9] tracking-tighter mix-blend-overlay opacity-90 w-full">
-                <div class="overflow-hidden"><span class="hero-line block transform translate-y-full">BEYOND</span></div>
-                <div class="overflow-hidden"><span class="hero-line block transform translate-y-full text-transparent" style="-webkit-text-stroke: 1px rgba(255,255,255,0.8);">REALITY</span></div>
+            <h1 class="font-display text-[13vw] md:text-9xl font-bold leading-[0.9] tracking-tighter mix-blend-overlay opacity-90 w-full select-none">
+                <div class="overflow-hidden"><span class="hero-title-line block">BEYOND</span></div>
+                <div class="overflow-hidden"><span class="hero-title-line block text-transparent" style="-webkit-text-stroke: 1px rgba(255,255,255,0.8);">REALITY</span></div>
             </h1>
+            <div class="mt-12 reveal-opacity magnetic-wrap">
+                 <a href="#work" class="magnetic-item inline-block border border-white/30 px-8 py-3 rounded-full text-xs font-display tracking-widest uppercase hover:bg-white hover:text-black transition-colors duration-300">Showreel</a>
+            </div>
         </div>
     </section>
 
-    <section class="relative py-20 px-6 md:px-20 bg-black z-10 border-t border-white/10">
-        <div class="max-w-4xl mx-auto text-center md:text-left">
+    <section class="relative py-24 px-6 md:px-20 bg-halo-black z-10 border-t border-white/10">
+        <div class="max-w-5xl mx-auto text-center md:text-left">
             <span class="text-red-600 font-display text-xs tracking-widest mb-6 block md:inline-block">PHILOSOPHY</span>
-            <p class="reveal-text text-xl md:text-5xl leading-[1.6] md:leading-[1.4] font-light text-gray-400">
-                A <span class="text-white italic font-normal">HaloMotion</span> nem csupán rögzít. Mi a csendet vesszük fel két szívdobbanás között. 
+            <p class="text-xl md:text-5xl leading-[1.6] md:leading-[1.4] font-light text-gray-400 split-text-anim">
+                A <span class="text-white italic font-normal">HaloMotion</span> nem csupán rögzít. Mi a csendet vesszük fel két szívdobbanás között. A képek mögött megbújó láthatatlan történeteket keressük.
             </p>
         </div>
     </section>
 
     <section id="services" class="relative py-20 px-4 md:px-20 bg-[#080808]">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0">
-            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[300px] md:min-h-[450px] flex flex-col justify-between hover:bg-white/5 transition-colors duration-500 rounded-lg md:rounded-none md:border-t-0 md:border-b-0 md:border-l">
-                <div class="flex justify-between items-start"><span class="font-display text-3xl font-bold text-red-600">01</span></div>
-                <div><h3 class="font-display text-2xl md:text-3xl mb-4 text-white uppercase tracking-wider">Commercial</h3><p class="text-gray-500 text-sm leading-relaxed">Reklámfilmek, amik érzelmet közvetítenek.</p></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-1">
+            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[400px] flex flex-col justify-between hover:bg-white/5 transition-colors duration-500 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-red-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <div class="flex justify-between items-start z-10"><span class="font-display text-3xl font-bold text-red-600">01</span></div>
+                <div class="z-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <h3 class="font-display text-2xl md:text-3xl mb-4 text-white uppercase tracking-wider">Commercial</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Reklámfilmek, amik nem eladnak, hanem érzelmet közvetítenek.</p>
+                </div>
             </div>
-            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[300px] md:min-h-[450px] flex flex-col justify-between hover:bg-white/5 transition-colors duration-500 rounded-lg md:rounded-none md:border-t-0 md:border-b-0 md:border-l">
-                <div class="flex justify-between items-start"><span class="font-display text-3xl font-bold text-red-600">02</span></div>
-                <div><h3 class="font-display text-2xl md:text-3xl mb-4 text-white uppercase tracking-wider">Music Video</h3><p class="text-gray-500 text-sm leading-relaxed">A ritmus diktál, a kamera követ.</p></div>
+            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[400px] flex flex-col justify-between hover:bg-white/5 transition-colors duration-500 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-red-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <div class="flex justify-between items-start z-10"><span class="font-display text-3xl font-bold text-red-600">02</span></div>
+                <div class="z-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <h3 class="font-display text-2xl md:text-3xl mb-4 text-white uppercase tracking-wider">Music Video</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Vizuális szimfóniák, ahol minden vágás egy ütem.</p>
+                </div>
             </div>
-            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[300px] md:min-h-[450px] flex flex-col justify-between hover:bg-white/5 transition-colors duration-500 rounded-lg md:rounded-none md:border border-white/5">
-                <div class="flex justify-between items-start"><span class="font-display text-3xl font-bold text-red-600">03</span></div>
-                <div><h3 class="font-display text-2xl md:text-3xl mb-4 text-white uppercase tracking-wider">Brand ID</h3><p class="text-gray-500 text-sm leading-relaxed">A brand lelkének vizuális leképezése.</p></div>
+            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[400px] flex flex-col justify-between hover:bg-white/5 transition-colors duration-500 relative overflow-hidden">
+                 <div class="absolute inset-0 bg-gradient-to-br from-red-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <div class="flex justify-between items-start z-10"><span class="font-display text-3xl font-bold text-red-600">03</span></div>
+                <div class="z-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <h3 class="font-display text-2xl md:text-3xl mb-4 text-white uppercase tracking-wider">Brand ID</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Arculat, ami nem csak látszik, de érezhető is.</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="method" class="relative overflow-hidden bg-black">
+    <section id="method" class="relative overflow-hidden bg-halo-black">
         <div class="horizontal-section">
-            <div class="panel flex-col items-start bg-black relative border-b border-white/10 md:border-b-0">
-                <h2 class="font-display text-[15vw] leading-none text-white/5 uppercase font-bold absolute right-4 bottom-4 md:right-10 md:bottom-10 select-none">Idea</h2>
+            <div class="panel flex-col items-start bg-halo-black relative border-b border-white/10 md:border-b-0">
+                <h2 class="font-display text-[18vw] leading-none text-white/5 uppercase font-bold absolute right-0 bottom-0 translate-x-[20%] translate-y-[20%] select-none parallax-text">Idea</h2>
                 <div class="z-10 max-w-2xl relative px-2">
                     <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-4 block border border-red-900/50 w-fit px-3 py-1 rounded-full">PHASE 01</span>
                     <h3 class="text-4xl md:text-6xl font-light mb-6 text-white">Koncepció</h3>
@@ -297,15 +330,17 @@
                 </div>
             </div>
             <div class="panel flex-col items-start bg-[#050505] relative border-b border-white/10 md:border-b-0">
-                 <h2 class="font-display text-[15vw] leading-none text-white/5 uppercase font-bold absolute left-4 top-4 md:left-10 md:top-10 select-none">Act</h2>
+                 <h2 class="font-display text-[18vw] leading-none text-white/5 uppercase font-bold absolute left-0 top-0 -translate-x-[20%] -translate-y-[20%] select-none parallax-text">Act</h2>
                 <div class="z-10 max-w-2xl md:ml-auto md:text-right relative px-2">
                     <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-4 block md:inline-block border border-red-900/50 w-fit px-3 py-1 rounded-full">PHASE 02</span>
                     <h3 class="text-4xl md:text-6xl font-light mb-6 text-white">Forgatás</h3>
-                    <p class="text-lg text-gray-400 font-light">Precíziós műszerként dolgozunk.</p>
+                    <p class="text-lg text-gray-400 font-light">Nincs felesleges mozdulat, csak a tökéletes pillanat vadászata.</p>
                 </div>
             </div>
             <div class="panel flex-col items-center bg-black relative">
-                <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000')] bg-cover bg-center opacity-20 mix-blend-screen"></div>
+                <div class="absolute inset-0 w-full h-full overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000" class="w-full h-full object-cover opacity-20 mix-blend-screen scale-110" data-scroll-speed="0.5">
+                </div>
                 <div class="absolute inset-0 bg-black/50"></div>
                 <div class="z-10 text-center relative px-4">
                     <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-6 block border border-red-900/50 w-fit mx-auto px-3 py-1 rounded-full bg-black">PHASE 03</span>
@@ -316,40 +351,99 @@
     </section>
 
     <section id="work" class="relative py-20 md:py-32 min-h-screen z-10 overflow-hidden bg-[#0a0a0a]">
-        <div id="canvas-container"></div>
-        <div class="px-6 md:px-20 mb-16 relative z-10">
-            <h2 class="font-display text-4xl md:text-7xl mb-4">SELECTED<br><span class="text-gray-600">WORKS</span></h2>
-            <div class="w-20 h-1 bg-red-600 mb-4"></div>
+        <div class="px-6 md:px-20 mb-24 relative z-10">
+            <h2 class="font-display text-4xl md:text-8xl mb-4 leading-[0.8]">SELECTED<br><span class="text-gray-700 ml-12">WORKS</span></h2>
         </div>
+        
         <div class="hover-reveal" id="reveal-image"></div>
+        
         <div class="project-list w-full max-w-[95%] md:max-w-[90%] mx-auto relative z-10 pb-20">
-            <div class="project-item group relative py-12 md:py-16 border-t border-white/10 cursor-pointer" data-img="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1000" data-video="https://assets.mixkit.co/videos/preview/mixkit-racing-car-driving-on-a-track-4034-large.mp4" data-title="Dark Matter">
-                <div class="flex flex-col md:flex-row justify-between md:items-baseline px-2 transition-all duration-500 md:group-hover:px-10">
-                    <div class="flex items-center justify-between w-full md:w-auto">
-                        <div>
-                            <span class="block text-[10px] font-display text-red-600 mb-2 tracking-widest">PORSCHE 911</span>
-                            <h3 class="font-display text-4xl md:text-7xl font-bold uppercase text-white group-hover:text-red-500 md:group-hover:text-transparent md:group-hover:stroke-white transition-all duration-300" style="-webkit-text-stroke: 1px transparent;">Dark Matter</h3>
-                        </div>
-                        <div class="md:hidden w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white active:bg-white active:text-black transition-colors">▶</div>
+            
+            <div class="project-item group relative py-12 md:py-16 border-t border-white/10 cursor-pointer" 
+                 data-img="https://images.unsplash.com/photo-1503376763036-066120622c74?q=80&w=1000" 
+                 data-video="https://assets.mixkit.co/videos/preview/mixkit-racing-car-driving-on-a-track-4034-large.mp4" 
+                 data-title="Apex Hunter">
+                <div class="absolute left-0 top-0 w-full h-0 bg-white/5 transition-all duration-500 group-hover:h-full z-0"></div>
+                <div class="flex flex-col md:flex-row justify-between md:items-center px-4 md:px-10 relative z-10">
+                    <div class="flex items-center gap-6">
+                        <span class="font-display text-gray-600 text-sm group-hover:text-red-500 transition-colors">01</span>
+                        <h3 class="font-display text-4xl md:text-7xl font-bold uppercase text-white group-hover:text-transparent group-hover:stroke-white transition-all duration-500" style="-webkit-text-stroke: 1px transparent;">Apex Hunter</h3>
+                    </div>
+                    <div class="flex items-center gap-4 mt-4 md:mt-0">
+                        <span class="text-[10px] font-display text-gray-400 group-hover:text-white tracking-widest uppercase">Porsche 911 GT3</span>
                     </div>
                 </div>
             </div>
-            <div class="project-item group relative py-12 md:py-16 border-t border-b border-white/10 cursor-pointer" data-img="https://images.unsplash.com/photo-1515462277126-2dd0c162007a?q=80&w=1000" data-video="https://assets.mixkit.co/videos/preview/mixkit-young-woman-in-a-field-of-flowers-1224-large.mp4" data-title="Velvet Underground">
-                 <div class="flex flex-col md:flex-row justify-between md:items-baseline px-2 transition-all duration-500 md:group-hover:px-10">
-                    <div class="flex items-center justify-between w-full md:w-auto">
-                        <div>
-                            <span class="block text-[10px] font-display text-red-600 mb-2 tracking-widest">GUCCI CAMPAIGN</span>
-                            <h3 class="font-display text-4xl md:text-7xl font-bold uppercase text-white group-hover:text-red-500 md:group-hover:text-transparent md:group-hover:stroke-white transition-all duration-300" style="-webkit-text-stroke: 1px transparent;">Velvet UG</h3>
-                        </div>
-                        <div class="md:hidden w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white active:bg-white active:text-black transition-colors">▶</div>
+
+            <div class="project-item group relative py-12 md:py-16 border-t border-white/10 cursor-pointer" 
+                 data-img="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000" 
+                 data-video="https://assets.mixkit.co/videos/preview/mixkit-young-woman-in-a-field-of-flowers-1224-large.mp4" 
+                 data-title="Velvet Silk">
+                 <div class="absolute left-0 top-0 w-full h-0 bg-white/5 transition-all duration-500 group-hover:h-full z-0"></div>
+                 <div class="flex flex-col md:flex-row justify-between md:items-center px-4 md:px-10 relative z-10">
+                    <div class="flex items-center gap-6">
+                        <span class="font-display text-gray-600 text-sm group-hover:text-red-500 transition-colors">02</span>
+                        <h3 class="font-display text-4xl md:text-7xl font-bold uppercase text-white group-hover:text-transparent group-hover:stroke-white transition-all duration-500" style="-webkit-text-stroke: 1px transparent;">Velvet Silk</h3>
+                    </div>
+                    <div class="flex items-center gap-4 mt-4 md:mt-0">
+                        <span class="text-[10px] font-display text-gray-400 group-hover:text-white tracking-widest uppercase">Fashion Week Paris</span>
                     </div>
                 </div>
             </div>
+
+            <div class="project-item group relative py-12 md:py-16 border-t border-white/10 cursor-pointer" 
+                 data-img="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000" 
+                 data-video="https://assets.mixkit.co/videos/preview/mixkit-motherboard-microchip-macro-shot-278-large.mp4" 
+                 data-title="Neural Link">
+                 <div class="absolute left-0 top-0 w-full h-0 bg-white/5 transition-all duration-500 group-hover:h-full z-0"></div>
+                 <div class="flex flex-col md:flex-row justify-between md:items-center px-4 md:px-10 relative z-10">
+                    <div class="flex items-center gap-6">
+                        <span class="font-display text-gray-600 text-sm group-hover:text-red-500 transition-colors">03</span>
+                        <h3 class="font-display text-4xl md:text-7xl font-bold uppercase text-white group-hover:text-transparent group-hover:stroke-white transition-all duration-500" style="-webkit-text-stroke: 1px transparent;">Neural Link</h3>
+                    </div>
+                    <div class="flex items-center gap-4 mt-4 md:mt-0">
+                        <span class="text-[10px] font-display text-gray-400 group-hover:text-white tracking-widest uppercase">Tech Launch</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-item group relative py-12 md:py-16 border-t border-white/10 cursor-pointer" 
+                 data-img="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1000" 
+                 data-video="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-forest-covered-in-fog-2253-large.mp4" 
+                 data-title="Silent North">
+                 <div class="absolute left-0 top-0 w-full h-0 bg-white/5 transition-all duration-500 group-hover:h-full z-0"></div>
+                 <div class="flex flex-col md:flex-row justify-between md:items-center px-4 md:px-10 relative z-10">
+                    <div class="flex items-center gap-6">
+                        <span class="font-display text-gray-600 text-sm group-hover:text-red-500 transition-colors">04</span>
+                        <h3 class="font-display text-4xl md:text-7xl font-bold uppercase text-white group-hover:text-transparent group-hover:stroke-white transition-all duration-500" style="-webkit-text-stroke: 1px transparent;">Silent North</h3>
+                    </div>
+                    <div class="flex items-center gap-4 mt-4 md:mt-0">
+                        <span class="text-[10px] font-display text-gray-400 group-hover:text-white tracking-widest uppercase">Documentary</span>
+                    </div>
+                </div>
+            </div>
+
+             <div class="project-item group relative py-12 md:py-16 border-t border-b border-white/10 cursor-pointer" 
+                 data-img="https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=1000" 
+                 data-video="https://assets.mixkit.co/videos/preview/mixkit-people-dancing-at-a-concert-with-lots-of-lights-42588-large.mp4" 
+                 data-title="Neon Nights">
+                 <div class="absolute left-0 top-0 w-full h-0 bg-white/5 transition-all duration-500 group-hover:h-full z-0"></div>
+                 <div class="flex flex-col md:flex-row justify-between md:items-center px-4 md:px-10 relative z-10">
+                    <div class="flex items-center gap-6">
+                        <span class="font-display text-gray-600 text-sm group-hover:text-red-500 transition-colors">05</span>
+                        <h3 class="font-display text-4xl md:text-7xl font-bold uppercase text-white group-hover:text-transparent group-hover:stroke-white transition-all duration-500" style="-webkit-text-stroke: 1px transparent;">Neon Nights</h3>
+                    </div>
+                    <div class="flex items-center gap-4 mt-4 md:mt-0">
+                        <span class="text-[10px] font-display text-gray-400 group-hover:text-white tracking-widest uppercase">Sony Music</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </section>
 
-    <section id="team" class="relative py-24 md:py-32 px-6 md:px-20 bg-black z-10 border-t border-white/10">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-24">
+    <section id="team" class="relative py-24 md:py-32 px-6 md:px-20 bg-halo-black z-10 border-t border-white/10">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-24">
             <div>
                 <span class="text-red-600 font-display text-xs tracking-widest mb-4 block">BEHIND THE SCENES</span>
                 <h2 class="font-display text-4xl md:text-7xl text-white">THE<br><span class="text-gray-700">CREW</span></h2>
@@ -361,180 +455,182 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            
-            <div class="team-card group cursor-pointer">
-                <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transition-transform duration-700 ease-out">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                        <div class="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                            <p class="text-white/80 text-sm font-light italic">"A vizualitás nyelv, amit mindenki ért."</p>
+            <div class="team-card group cursor-pointer magnetic-wrap">
+                <div class="magnetic-item">
+                    <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale group-hover:grayscale-0 transition-all duration-700">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000">
+                    </div>
+                    <div class="border-t border-white/20 pt-4 flex justify-between items-end">
+                        <div>
+                            <h3 class="font-display text-xl md:text-2xl text-white mb-1">Kovács Dávid</h3>
+                            <p class="text-xs tracking-widest text-gray-500 font-display uppercase">Creative Director</p>
                         </div>
                     </div>
                 </div>
-                <div class="border-t border-white/20 pt-4 flex justify-between items-end">
-                    <div>
-                        <h3 class="font-display text-xl md:text-2xl text-white mb-1 group-hover:text-red-500 transition-colors">Kovács Dávid</h3>
-                        <p class="text-xs tracking-widest text-gray-500 font-display uppercase">Creative Director</p>
-                    </div>
-                    <a href="#" class="w-8 h-8 border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">↗</a>
-                </div>
             </div>
-
-            <div class="team-card group cursor-pointer md:mt-16">
-                <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transition-transform duration-700 ease-out">
-                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                        <div class="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                            <p class="text-white/80 text-sm font-light italic">"Minden árnyéknak jelentése van."</p>
+             <div class="team-card group cursor-pointer md:mt-16 magnetic-wrap">
+                <div class="magnetic-item">
+                    <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale group-hover:grayscale-0 transition-all duration-700">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000">
+                    </div>
+                    <div class="border-t border-white/20 pt-4 flex justify-between items-end">
+                        <div>
+                            <h3 class="font-display text-xl md:text-2xl text-white mb-1">Nagy Anna</h3>
+                            <p class="text-xs tracking-widest text-gray-500 font-display uppercase">D.O.P</p>
                         </div>
                     </div>
                 </div>
-                <div class="border-t border-white/20 pt-4 flex justify-between items-end">
-                    <div>
-                        <h3 class="font-display text-xl md:text-2xl text-white mb-1 group-hover:text-red-500 transition-colors">Nagy Anna</h3>
-                        <p class="text-xs tracking-widest text-gray-500 font-display uppercase">Director of Photography</p>
-                    </div>
-                    <a href="#" class="w-8 h-8 border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">↗</a>
-                </div>
             </div>
-
-            <div class="team-card group cursor-pointer md:mt-32">
-                <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transition-transform duration-700 ease-out">
-                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                        <div class="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                            <p class="text-white/80 text-sm font-light italic">"A vágás a film lelke."</p>
+             <div class="team-card group cursor-pointer md:mt-32 magnetic-wrap">
+                <div class="magnetic-item">
+                    <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale group-hover:grayscale-0 transition-all duration-700">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000">
+                    </div>
+                    <div class="border-t border-white/20 pt-4 flex justify-between items-end">
+                        <div>
+                            <h3 class="font-display text-xl md:text-2xl text-white mb-1">Tóth Márk</h3>
+                            <p class="text-xs tracking-widest text-gray-500 font-display uppercase">Lead Editor</p>
                         </div>
                     </div>
                 </div>
-                <div class="border-t border-white/20 pt-4 flex justify-between items-end">
-                    <div>
-                        <h3 class="font-display text-xl md:text-2xl text-white mb-1 group-hover:text-red-500 transition-colors">Tóth Márk</h3>
-                        <p class="text-xs tracking-widest text-gray-500 font-display uppercase">Lead Editor</p>
-                    </div>
-                    <a href="#" class="w-8 h-8 border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">↗</a>
-                </div>
             </div>
-
         </div>
     </section>
 
-    <section id="contact" class="relative py-24 md:py-32 px-6 md:px-20 z-10 bg-[#050505]">
+    <section id="contact" class="relative py-24 md:py-32 px-6 md:px-20 z-10 bg-halo-black">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20">
             <div>
                 <h2 class="font-display text-5xl md:text-8xl mb-8 leading-none tracking-tighter">START<br><span class="text-gray-700">PROJECT</span></h2>
-                <a href="mailto:studio@halomotion.hu" class="text-xl md:text-3xl font-light text-red-600 hover:text-white transition-colors border-b border-red-900/30 pb-2 inline-block">studio@halomotion.hu</a>
+                <a href="mailto:studio@halomotion.hu" class="text-xl md:text-3xl font-light text-red-600 hover:text-white transition-colors border-b border-red-900/30 pb-2 inline-block magnetic-wrap"><span class="magnetic-item">studio@halomotion.hu</span></a>
             </div>
             <div class="flex flex-col justify-end">
                 <form class="space-y-8">
-                    <input type="email" placeholder="YOUR EMAIL" class="w-full bg-transparent border-b border-gray-800 py-4 text-lg focus:outline-none focus:border-red-600 transition-colors font-light placeholder:text-gray-700 rounded-none appearance-none text-white">
-                    <textarea placeholder="TELL US ABOUT YOUR IDEA" rows="3" class="w-full bg-transparent border-b border-gray-800 py-4 text-lg focus:outline-none focus:border-red-600 transition-colors font-light placeholder:text-gray-700 rounded-none appearance-none text-white"></textarea>
-                    <button class="w-full py-5 bg-white text-black font-display font-bold tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all duration-300 uppercase text-sm">Küldés</button>
+                    <div class="relative overflow-hidden">
+                        <input type="email" placeholder="EMAIL" class="w-full bg-transparent border-b border-gray-800 py-4 text-lg focus:outline-none focus:border-red-600 transition-colors font-light placeholder:text-gray-700 rounded-none appearance-none text-white peer">
+                    </div>
+                    <div class="relative overflow-hidden">
+                        <textarea placeholder="AZ ÖTLET" rows="3" class="w-full bg-transparent border-b border-gray-800 py-4 text-lg focus:outline-none focus:border-red-600 transition-colors font-light placeholder:text-gray-700 rounded-none appearance-none text-white"></textarea>
+                    </div>
+                    <div class="magnetic-wrap w-full">
+                        <button class="magnetic-item w-full py-5 bg-white text-black font-display font-bold tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all duration-300 uppercase text-sm border border-transparent hover:border-red-500">Küldés</button>
+                    </div>
                 </form>
             </div>
         </div>
-        <div class="w-full text-center mt-24 md:mt-32 border-t border-white/5 pt-12">
-             <h1 class="font-display text-[12vw] leading-none font-bold text-[#111] pointer-events-none select-none">HALOMOTION</h1>
+        <div class="w-full text-center mt-32 md:mt-48 border-t border-white/5 pt-20 overflow-hidden">
+             <h1 class="font-display text-[15vw] leading-none font-bold text-[#111] pointer-events-none select-none" id="footer-logo">HALOMOTION</h1>
+             <div class="flex justify-between px-6 mt-8 text-gray-600 text-xs font-display">
+                 <span>&copy; 2024 HALOMOTION</span>
+                 <span>BUDAPEST</span>
+             </div>
         </div>
     </section>
 
     <script>
+        // --- SETUP ---
         gsap.registerPlugin(ScrollTrigger);
 
-        // 1. Lenis Smooth Scroll
         const lenis = new Lenis({
             duration: 1.2,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            direction: 'vertical',
-            gestureDirection: 'vertical',
             smooth: true,
-            mouseMultiplier: 1,
-            touchMultiplier: 2,
         });
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
 
-        lenis.on('scroll', ScrollTrigger.update);
-        gsap.ticker.add((time) => { lenis.raf(time * 1000); });
-        gsap.ticker.lagSmoothing(0);
+        // --- PRELOADER ---
+        const preloader = document.getElementById('preloader');
+        const counter = document.querySelector('.counter');
+        const bar = document.querySelector('.loader-bar');
 
-        // 2. Cursor Fix (Fail-safe)
+        let count = 0;
+        const interval = setInterval(() => {
+            count += Math.floor(Math.random() * 5) + 1;
+            if (count > 100) count = 100;
+            counter.innerText = count + '%';
+            bar.style.width = count + '%';
+            
+            if (count === 100) {
+                clearInterval(interval);
+                revealSite();
+            }
+        }, 15);
+
+        function revealSite() {
+            const tl = gsap.timeline();
+            tl.to('.loader-text, .counter, .loader-bar-bg', { y: -50, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.inOut" })
+              .to(preloader, { height: 0, duration: 1.2, ease: "expo.inOut" })
+              .from(".hero-title-line", { yPercent: 120, duration: 1.5, ease: "power4.out", stagger: 0.1 }, "-=0.8")
+              .from(".reveal-opacity", { opacity: 0, y: 20, duration: 1 }, "-=1");
+        }
+
+        // --- OPTIMIZED CURSOR ---
         const cursorDot = document.querySelector('.cursor-dot');
         const cursorOutline = document.querySelector('.cursor-outline');
         
-        if (window.matchMedia("(min-width: 1024px)").matches) {
-            
-            // Azonnal tegyük a kurzort középre, hogy ne a 0,0-ról induljon
-            gsap.set(cursorDot, { xPercent: -50, yPercent: -50 });
-            gsap.set(cursorOutline, { xPercent: -50, yPercent: -50 });
+        // High-perf cursor movement
+        const dotX = gsap.quickTo(cursorDot, "x", { duration: 0.1, ease: "power3" });
+        const dotY = gsap.quickTo(cursorDot, "y", { duration: 0.1, ease: "power3" });
+        const outX = gsap.quickTo(cursorOutline, "x", { duration: 0.4, ease: "power3" });
+        const outY = gsap.quickTo(cursorOutline, "y", { duration: 0.4, ease: "power3" });
 
-            let isCursorActive = false;
-
-            window.addEventListener('mousemove', (e) => {
-                const posX = e.clientX;
-                const posY = e.clientY;
-
-                // Ha ez az első mozdulat, akkor aktiváljuk a custom kurzort és rejtjük el a rendszert
-                if (!isCursorActive) {
-                    isCursorActive = true;
-                    document.body.classList.add('custom-cursor-active'); // CSS rejti el a rendszert
-                    gsap.to(cursorDot, { opacity: 1, duration: 0.2 });
-                    gsap.to(cursorOutline, { opacity: 1, duration: 0.2 });
-                }
-
-                // Mozgatás
-                gsap.to(cursorDot, { x: posX, y: posY, duration: 0 }); // Dot: instant
-                gsap.to(cursorOutline, { x: posX, y: posY, duration: 0.15 }); // Outline: kicsit késik
-            });
-
-            // Hover effektek
-            const hoverElements = document.querySelectorAll('a, button, .project-item, .service-card, .team-card');
-            hoverElements.forEach(el => {
-                el.addEventListener('mouseenter', () => {
-                    gsap.to(cursorOutline, { scale: 2, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: "1px", duration: 0.3 });
-                });
-                el.addEventListener('mouseleave', () => {
-                    gsap.to(cursorOutline, { scale: 1, backgroundColor: "transparent", borderWidth: "1px", duration: 0.3 });
-                });
-            });
-        }
-
-        // 3. Mobile Menu
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
-        let isMenuOpen = false;
-
-        menuBtn.addEventListener('click', () => {
-            isMenuOpen = !isMenuOpen;
-            if (isMenuOpen) {
-                mobileMenu.classList.add('open');
-                menuBtn.innerText = 'CLOSE';
-                menuBtn.style.color = 'white';
-                menuBtn.style.borderColor = 'white';
-                lenis.stop();
-            } else {
-                mobileMenu.classList.remove('open');
-                menuBtn.innerText = 'MENU';
-                menuBtn.style.borderColor = 'rgba(255,255,255,0.3)';
-                lenis.start();
-            }
+        window.addEventListener('mousemove', (e) => {
+            dotX(e.clientX);
+            dotY(e.clientY);
+            outX(e.clientX);
+            outY(e.clientY);
         });
 
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                isMenuOpen = false;
-                mobileMenu.classList.remove('open');
-                menuBtn.innerText = 'MENU';
-                lenis.start();
+        // Magnetic Effect
+        document.querySelectorAll('.magnetic-wrap').forEach(wrap => {
+            const item = wrap.querySelector('.magnetic-item');
+            wrap.addEventListener('mousemove', (e) => {
+                const rect = wrap.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                gsap.to(item, { x: x * 0.3, y: y * 0.3, duration: 0.3, ease: "power2.out" });
+                gsap.to(cursorOutline, { scale: 1.5, mixBlendMode: 'difference', duration: 0.3 });
+            });
+            wrap.addEventListener('mouseleave', () => {
+                gsap.to(item, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+                gsap.to(cursorOutline, { scale: 1, duration: 0.3 });
             });
         });
 
-        // 4. Animations
-        gsap.to(".hero-line", { y: 0, duration: 1.5, ease: "power4.out", stagger: 0.15, delay: 0.2 });
+        // --- SPLIT TEXT ANIMATION ---
+        document.querySelectorAll('.split-text-anim').forEach(el => {
+            const text = el.innerText;
+            el.innerHTML = '';
+            text.split(' ').forEach(word => {
+                const wordSpan = document.createElement('span');
+                wordSpan.className = 'char-wrap mr-1.5';
+                word.split('').forEach(char => {
+                    const charSpan = document.createElement('span');
+                    charSpan.className = 'char inline-block';
+                    charSpan.innerText = char;
+                    wordSpan.appendChild(charSpan);
+                });
+                el.appendChild(wordSpan);
+            });
+        });
 
-        let mm = gsap.matchMedia();
+        gsap.utils.toArray('.split-text-anim').forEach(text => {
+            const chars = text.querySelectorAll('.char');
+            gsap.to(chars, {
+                y: 0,
+                duration: 1,
+                stagger: 0.015,
+                ease: "power3.out",
+                scrollTrigger: { trigger: text, start: "top 85%" }
+            });
+        });
 
-        mm.add("(min-width: 768px)", () => {
-            let sections = gsap.utils.toArray(".panel");
+        // --- SCROLL ANIMATIONS ---
+        if (window.matchMedia("(min-width: 768px)").matches) {
+            const sections = gsap.utils.toArray(".panel");
             gsap.to(sections, {
                 xPercent: -100 * (sections.length - 1),
                 ease: "none",
@@ -542,147 +638,161 @@
                     trigger: ".horizontal-section",
                     pin: true,
                     scrub: 1,
-                    end: () => "+=" + document.querySelector(".horizontal-section").offsetWidth,
-                    invalidateOnRefresh: true
+                    end: () => "+=" + document.querySelector(".horizontal-section").offsetWidth
                 }
             });
+
+            gsap.utils.toArray(".parallax-text").forEach(text => {
+                gsap.to(text, {
+                    x: 100,
+                    scrollTrigger: {
+                        trigger: text.parentElement,
+                        containerAnimation: gsap.getTweensOf(sections)[0],
+                        start: "left right",
+                        end: "right left",
+                        scrub: true
+                    }
+                });
+            });
+
+            gsap.to("#hero-video", {
+                yPercent: 30,
+                ease: "none",
+                scrollTrigger: { trigger: "body", start: "top top", end: "bottom top", scrub: true }
+            });
             
-            // Project Hover
-            const revealImage = document.getElementById('reveal-image');
-            const projectItems = document.querySelectorAll('.project-item');
-            
-            projectItems.forEach(item => {
-                item.addEventListener('mouseenter', () => {
-                    const img = item.getAttribute('data-img');
-                    revealImage.style.backgroundImage = `url(${img})`;
-                    gsap.to(revealImage, { opacity: 1, scale: 1, duration: 0.3 });
-                });
-                item.addEventListener('mouseleave', () => {
-                    gsap.to(revealImage, { opacity: 0, scale: 0.8, duration: 0.3 });
-                });
-                item.addEventListener('mousemove', (e) => {
-                    gsap.to(revealImage, { x: e.clientX, y: e.clientY, duration: 0.5, ease: "power2.out" });
-                });
+             gsap.fromTo("#footer-logo", 
+                { y: -100 },
+                { y: 50, scrollTrigger: { trigger: "#contact", start: "top center", scrub: 1 }}
+            );
+        }
+
+        // --- OPTIMIZED REVEAL HOVER ---
+        const revealImage = document.getElementById('reveal-image');
+        const projectItems = document.querySelectorAll('.project-item');
+        
+        // High-perf reveal movement
+        const revX = gsap.quickTo(revealImage, "x", { duration: 0.6, ease: "power3" });
+        const revY = gsap.quickTo(revealImage, "y", { duration: 0.6, ease: "power3" });
+
+        projectItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                const img = item.getAttribute('data-img');
+                revealImage.style.backgroundImage = `url(${img})`;
+                gsap.to(revealImage, { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" });
+            });
+            item.addEventListener('mouseleave', () => {
+                gsap.to(revealImage, { opacity: 0, scale: 0.6, duration: 0.4, ease: "power2.out" });
+            });
+            item.addEventListener('mousemove', (e) => {
+                revX(e.clientX);
+                revY(e.clientY);
+                // Subtle tilt
+                const tilt = (e.clientX / window.innerWidth - 0.5) * 15;
+                gsap.to(revealImage, { rotation: tilt, duration: 0.6 });
             });
         });
 
-        mm.add("(max-width: 767px)", () => {
-            gsap.utils.toArray(".panel").forEach(panel => {
-                gsap.from(panel.querySelector('h3'), {
-                    scrollTrigger: { trigger: panel, start: "top 75%" },
-                    y: 30, opacity: 0, duration: 0.8
-                });
-            });
-        });
-
-        // Video Modal
+        // --- VIDEO MODAL ---
         const modal = document.getElementById('video-modal');
         const modalVideo = document.getElementById('modal-video');
         const modalTitle = document.getElementById('modal-title');
-        const closeModal = document.getElementById('close-modal');
-        const projectItemsAll = document.querySelectorAll('.project-item');
-
-        projectItemsAll.forEach(item => {
+        
+        projectItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 const videoSrc = item.getAttribute('data-video');
                 const title = item.getAttribute('data-title');
-                
                 if (videoSrc) {
                     modalVideo.src = videoSrc;
                     modalTitle.innerText = title;
                     modal.classList.remove('hidden');
                     lenis.stop();
-                    setTimeout(() => {
-                        modal.classList.remove('opacity-0');
-                        modalVideo.play();
-                    }, 50);
+                    gsap.to(modal, { opacity: 1, duration: 0.5 });
+                    modalVideo.play();
                 }
             });
         });
 
-        function hideModal() {
-            modal.classList.add('opacity-0');
-            setTimeout(() => {
+        document.getElementById('close-modal').addEventListener('click', () => {
+            gsap.to(modal, { opacity: 0, duration: 0.5, onComplete: () => {
                 modal.classList.add('hidden');
                 modalVideo.pause();
-                modalVideo.currentTime = 0;
+                modalVideo.src = "";
                 lenis.start();
-            }, 500);
-        }
+            }});
+        });
 
-        closeModal.addEventListener('click', hideModal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
-
-        // Three.js Background
+        // --- THREE.JS BACKGROUND ---
         const scene = new THREE.Scene();
         const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
         const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
-        const workContainer = document.getElementById('canvas-container');
-        const workSection = document.getElementById('work');
-
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-        
-        function resizeThree() {
-            if(!workSection) return;
-            const rect = workSection.getBoundingClientRect();
-            renderer.setSize(rect.width, rect.height);
-            if (uniforms) uniforms.u_resolution.value.set(rect.width, rect.height);
-        }
-        workContainer.appendChild(renderer.domElement);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
 
         const uniforms = {
             u_time: { value: 0.0 },
             u_resolution: { value: new THREE.Vector2() }
         };
 
-        const fragmentShader = `
-            uniform float u_time;
-            uniform vec2 u_resolution;
-            float random(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
-            float noise(vec2 st) {
-                vec2 i = floor(st);
-                vec2 f = fract(st);
-                float a = random(i);
-                float b = random(i + vec2(1.0, 0.0));
-                float c = random(i + vec2(0.0, 1.0));
-                float d = random(i + vec2(1.0, 1.0));
-                vec2 u = f * f * (3.0 - 2.0 * f);
-                return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-            }
-            void main() {
-                vec2 st = gl_FragCoord.xy/u_resolution.xy;
-                st.x *= u_resolution.x/u_resolution.y;
-                float t = u_time * 0.2;
-                float n = noise(st * 3.0 + t);
-                vec3 color = vec3(0.08); 
-                color += vec3(0.05, 0.0, 0.0) * smoothstep(0.3, 0.7, n);
-                gl_FragColor = vec4(color, 1.0);
-            }
-        `;
+        // Kicsit lágyabb shader a zajhoz (nem audio, csak visual noise)
         const material = new THREE.ShaderMaterial({
             uniforms: uniforms,
             vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position, 1.0); }`,
-            fragmentShader: fragmentShader
+            fragmentShader: `
+                uniform float u_time;
+                uniform vec2 u_resolution;
+                float random(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
+                float noise(vec2 st) {
+                    vec2 i = floor(st);
+                    vec2 f = fract(st);
+                    float a = random(i);
+                    float b = random(i + vec2(1.0, 0.0));
+                    float c = random(i + vec2(0.0, 1.0));
+                    float d = random(i + vec2(1.0, 1.0));
+                    vec2 u = f * f * (3.0 - 2.0 * f);
+                    return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+                }
+                void main() {
+                    vec2 st = gl_FragCoord.xy/u_resolution.xy;
+                    st.x *= u_resolution.x/u_resolution.y;
+                    float n = noise(st * 3.0 + u_time * 0.05);
+                    float fog = smoothstep(0.3, 0.7, n);
+                    gl_FragColor = vec4(vec3(0.1), fog * 0.15); // Nagyon halvány köd
+                }
+            `,
+            transparent: true
         });
-        const plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
-        scene.add(plane);
+        scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+
+        function resize() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
         function animate() {
-            uniforms.u_time.value += 0.05;
+            uniforms.u_time.value += 0.01;
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
-        resizeThree();
-        window.addEventListener('resize', resizeThree);
         animate();
 
-        // Scroll Progress Bar
-        window.addEventListener("scroll", () => {
-             const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-             const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-             const scrolled = (scrollTop / scrollHeight) * 100;
-             document.querySelector(".progress-bar").style.width = scrolled + "%";
+        // --- MENU TOGGLE ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        let isMenuOpen = false;
+        menuBtn.addEventListener('click', () => {
+            isMenuOpen = !isMenuOpen;
+            if(isMenuOpen) {
+                mobileMenu.classList.remove('translate-y-full');
+                gsap.to(".mobile-link", { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.3 });
+                menuBtn.innerText = "CLOSE";
+            } else {
+                mobileMenu.classList.add('translate-y-full');
+                gsap.to(".mobile-link", { opacity: 0, y: 20, duration: 0.2 });
+                menuBtn.innerText = "MENU";
+            }
         });
     </script>
 </body>
