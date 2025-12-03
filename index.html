@@ -58,14 +58,29 @@
             font-family: 'Cormorant Garamond', serif;
             overflow-x: hidden;
             width: 100%;
-            /* Mobilon visszaadjuk a normál kurzort */
             cursor: auto; 
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Csak PC-n legyen rejtett a kurzor */
         @media (hover: hover) and (pointer: fine) {
             body { cursor: none; }
+        }
+
+        /* --- SCROLL PROGRESS --- */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 9940;
+        }
+        .scroll-bar {
+            width: 100%;
+            height: 0%;
+            background: #dc2626;
+            display: block;
         }
 
         /* --- PRELOADER --- */
@@ -100,7 +115,7 @@
             bottom: 30px;
             right: 30px;
             font-family: 'Syncopate', sans-serif;
-            font-size: 14vw; /* Responsive font size */
+            font-size: 14vw; 
             font-weight: 700;
             color: #111;
             -webkit-text-stroke: 1px rgba(255,255,255,0.2);
@@ -110,7 +125,7 @@
             .counter { font-size: 80px; }
         }
 
-        /* --- CURSOR (Mobile Optimization: Hidden on touch) --- */
+        /* --- CURSOR --- */
         .cursor-dot, .cursor-outline, .cursor-label {
             display: none;
         }
@@ -165,11 +180,11 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: -1;
-            opacity: 0.15; /* Reduced opacity for mobile readability */
+            opacity: 0.15;
             pointer-events: none;
         }
 
-        /* Horizontal Scroll Logic - Only horizontal on Desktop */
+        /* Horizontal Scroll Logic */
         .horizontal-section {
             width: 100%;
             height: auto;
@@ -179,7 +194,7 @@
         }
         .panel {
             width: 100%;
-            min-height: 80vh; /* Better for mobile viewport logic */
+            min-height: 80vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -206,12 +221,6 @@
             }
         }
 
-        /* Visual Grain - Performance optimized via opacity */
-        @keyframes grainShift {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-24px, 18px); }
-        }
-
         .grain {
             position: fixed;
             top: 0; left: 0;
@@ -219,16 +228,48 @@
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
             pointer-events: none;
             z-index: 9900;
-            opacity: 0.25; /* Slightly reduced for mobile screen clarity */
+            opacity: 0.25;
             animation: grainShift 8s steps(10) infinite alternate;
         }
-        /* Disable heavy animation on low-power mode or old devices could be handled via JS, but CSS reduce is safe */
+        @keyframes grainShift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-24px, 18px); }
+        }
 
         .magnetic-wrap { display: inline-block; position: relative; z-index: 50; }
         .char-wrap { display: inline-block; overflow: hidden; }
-        .char { display: inline-block; transform: translateY(100%); }
+        .char { display: inline-block; }
+        
+        /* New Text Reveal Styles */
+        .reveal-word {
+            opacity: 0.1;
+            transition: opacity 0.1s;
+        }
+        
+        /* Marquee */
+        .marquee-container {
+            position: relative;
+            overflow: hidden;
+            background: #0a0a0a;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .marquee-content {
+            display: flex;
+            width: fit-content;
+            white-space: nowrap;
+        }
+        .marquee-item {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 3vw;
+            font-weight: 700;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            padding-right: 4vw;
+        }
 
-        /* Dot Grid Canvas Style */
         .dot-canvas {
             position: absolute;
             top: 0; left: 0;
@@ -238,16 +279,64 @@
             opacity: 0;
             transition: opacity 0.5s ease;
         }
-        
-        /* Mobile: Show dots slightly or hide completely to save battery? hiding for cleaner look */
         @media (min-width: 768px) {
-            .service-card:hover .dot-canvas {
-                opacity: 1;
-            }
+            .service-card:hover .dot-canvas { opacity: 1; }
         }
 
-        /* Mobile specific utilities */
+        /* Decoder / Cipher Effect */
+        .cipher-text {
+            opacity: 1;
+        }
+
         .mobile-visible { opacity: 1 !important; transform: translateY(0) !important; }
+
+        /* --- NEW: GLITCH EFFECT --- */
+        .glitch-text {
+            position: relative;
+        }
+        
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+
+        .glitch-active .glitch-text::before {
+            color: #ff0000;
+            z-index: -1;
+            opacity: 0.5;
+            animation: glitch-anim-1 0.4s infinite linear alternate-reverse;
+        }
+
+        .glitch-active .glitch-text::after {
+            color: #0000ff;
+            z-index: -2;
+            opacity: 0.5;
+            animation: glitch-anim-2 0.4s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: polygon(0 2%, 100% 2%, 100% 5%, 0 5%); transform: translate(-2px, -1px); }
+            20% { clip-path: polygon(0 15%, 100% 15%, 100% 18%, 0 18%); transform: translate(1px, 2px); }
+            40% { clip-path: polygon(0 30%, 100% 30%, 100% 35%, 0 35%); transform: translate(-1px, -3px); }
+            60% { clip-path: polygon(0 50%, 100% 50%, 100% 55%, 0 55%); transform: translate(3px, 1px); }
+            80% { clip-path: polygon(0 75%, 100% 75%, 100% 80%, 0 80%); transform: translate(-2px, 2px); }
+            100% { clip-path: polygon(0 90%, 100% 90%, 100% 95%, 0 95%); transform: translate(1px, -1px); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: polygon(0 10%, 100% 10%, 100% 15%, 0 15%); transform: translate(2px, 1px); }
+            20% { clip-path: polygon(0 25%, 100% 25%, 100% 28%, 0 28%); transform: translate(-1px, -2px); }
+            40% { clip-path: polygon(0 40%, 100% 40%, 100% 45%, 0 45%); transform: translate(1px, 3px); }
+            60% { clip-path: polygon(0 60%, 100% 60%, 100% 65%, 0 65%); transform: translate(-3px, -1px); }
+            80% { clip-path: polygon(0 85%, 100% 85%, 100% 88%, 0 88%); transform: translate(2px, -2px); }
+            100% { clip-path: polygon(0 95%, 100% 95%, 100% 98%, 0 98%); transform: translate(-1px, 1px); }
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-red-900 selection:text-white bg-halo-black text-gray-200">
@@ -260,6 +349,10 @@
             <div class="loader-bar"></div>
         </div>
         <div class="counter">0%</div>
+    </div>
+
+    <div class="scroll-progress hidden md:block">
+        <span class="scroll-bar"></span>
     </div>
 
     <div id="video-modal" class="fixed inset-0 z-[10000] bg-black/95 hidden flex flex-col justify-center items-center opacity-0 p-4">
@@ -321,14 +414,13 @@
             <div class="flex flex-col items-center gap-2 mb-4 md:mb-6 reveal-opacity">
                 <div class="flex items-center gap-3 md:gap-4">
                     <div class="w-8 md:w-12 h-[1px] bg-red-600"></div>
-                    <h2 class="text-[9px] md:text-sm font-display tracking-[0.3em] md:tracking-[0.4em] text-gray-300 uppercase">Cinematic Agency</h2>
+                    <div id="hero-tagline" class="text-[9px] md:text-sm font-display tracking-[0.3em] md:tracking-[0.4em] text-gray-300 uppercase h-4"></div>
                     <div class="w-8 md:w-12 h-[1px] bg-red-600"></div>
                 </div>
-                <div id="hero-tagline" class="text-[8px] md:text-xs font-display tracking-[0.3em] md:tracking-[0.35em] text-gray-400 uppercase mt-2 h-4"></div>
             </div>
-            <h1 class="font-display text-[14vw] md:text-9xl font-bold leading-[0.9] tracking-tighter mix-blend-overlay opacity-90 w-full select-none">
-                <div class="overflow-hidden"><span class="hero-title-line block">BEYOND</span></div>
-                <div class="overflow-hidden"><span class="hero-title-line block text-transparent" style="-webkit-text-stroke: 1px rgba(255,255,255,0.8);">REALITY</span></div>
+            <h1 class="font-display text-[14vw] md:text-9xl font-bold leading-[0.9] tracking-tighter mix-blend-overlay opacity-90 w-full select-none" id="hero-title">
+                <div class="overflow-hidden"><span class="hero-title-line block glitch-text" data-text="BEYOND">BEYOND</span></div>
+                <div class="overflow-hidden"><span class="hero-title-line block text-transparent glitch-text" style="-webkit-text-stroke: 1px rgba(255,255,255,0.8);" data-text="REALITY">REALITY</span></div>
             </h1>
             <div class="mt-8 md:mt-12 reveal-opacity magnetic-wrap">
                  <a href="#work" class="magnetic-item inline-block border border-white/30 px-6 py-3 md:px-8 md:py-3 rounded-full text-[10px] md:text-xs font-display tracking-widest uppercase hover:bg-white hover:text-black transition-colors duration-300 active:bg-white active:text-black">Showreel</a>
@@ -336,16 +428,31 @@
         </div>
     </section>
 
-    <section class="relative py-16 px-6 md:py-24 md:px-20 bg-halo-black z-10 border-t border-white/10">
-        <div class="max-w-5xl mx-auto text-center md:text-left">
-            <span class="text-red-600 font-display text-[10px] md:text-xs tracking-widest mb-4 md:mb-6 block md:inline-block">PHILOSOPHY</span>
-            <p class="text-lg md:text-5xl leading-[1.6] md:leading-[1.4] font-light text-gray-400 split-text-anim text-justify md:text-left">
-                A <span class="text-white italic font-normal">HaloMotion</span> nem csupán rögzít. Mi a csendet vesszük fel két szívdobbanás között. A képek mögött megbújó láthatatlan történeteket keressük.
+    <section class="relative py-24 px-6 md:py-40 md:px-20 bg-halo-black z-10 border-t border-white/10">
+        <div class="max-w-6xl mx-auto text-center md:text-left">
+            <span class="text-red-600 font-display text-[10px] md:text-xs tracking-widest mb-4 md:mb-8 block md:inline-block">PHILOSOPHY</span>
+            <p class="text-2xl md:text-6xl leading-[1.6] md:leading-[1.4] font-light text-white text-justify md:text-left reveal-text-scrub">
+                A HaloMotion nem csupán rögzít. Mi a csendet vesszük fel két szívdobbanás között. A képek mögött megbújó láthatatlan történeteket keressük. Nem a valóságot másoljuk, hanem újat teremtünk.
             </p>
         </div>
     </section>
 
-    <section id="services" class="relative py-16 md:py-20 px-4 md:px-20 bg-[#080808]">
+    <div class="marquee-container">
+        <div class="marquee-content">
+            <span class="marquee-item">Cinematography</span>
+            <span class="marquee-item">Color Grading</span>
+            <span class="marquee-item">Sound Design</span>
+            <span class="marquee-item">Art Direction</span>
+            <span class="marquee-item">Visual Effects</span>
+            <span class="marquee-item">Concept Art</span>
+            <span class="marquee-item">Cinematography</span>
+            <span class="marquee-item">Color Grading</span>
+            <span class="marquee-item">Sound Design</span>
+            <span class="marquee-item">Art Direction</span>
+        </div>
+    </div>
+
+    <section id="services" class="relative py-16 md:py-32 px-4 md:px-20 bg-[#080808]">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-1">
             
             <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[300px] md:min-h-[400px] flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
@@ -353,7 +460,7 @@
                 
                 <div class="flex justify-between items-start z-10 pointer-events-none"><span class="font-display text-2xl md:text-3xl font-bold text-red-600">01</span></div>
                 <div class="z-10 transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500 pointer-events-none">
-                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider">Commercial</h3>
+                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider cipher-text" data-text="Commercial">Commercial</h3>
                     <p class="text-gray-500 text-sm leading-relaxed opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-100">Reklámfilmek, amik nem eladnak, hanem érzelmet közvetítenek.</p>
                 </div>
             </div>
@@ -364,7 +471,7 @@
 
                 <div class="flex justify-between items-start z-10 pointer-events-none"><span class="font-display text-2xl md:text-3xl font-bold text-red-600">02</span></div>
                 <div class="z-10 transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500 pointer-events-none">
-                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider">Music Video</h3>
+                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider cipher-text" data-text="Music Video">Music Video</h3>
                     <p class="text-gray-500 text-sm leading-relaxed opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-100">Vizuális szimfóniák, ahol minden vágás egy ütem.</p>
                 </div>
             </div>
@@ -375,7 +482,7 @@
 
                 <div class="flex justify-between items-start z-10 pointer-events-none"><span class="font-display text-2xl md:text-3xl font-bold text-red-600">03</span></div>
                 <div class="z-10 transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500 pointer-events-none">
-                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider">Brand ID</h3>
+                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider cipher-text" data-text="Brand ID">Brand ID</h3>
                     <p class="text-gray-500 text-sm leading-relaxed opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-100">Arculat, ami nem csak látszik, de érezhető is.</p>
                 </div>
             </div>
@@ -389,7 +496,7 @@
                 <h2 class="font-display text-[25vw] md:text-[18vw] leading-none text-white/5 uppercase font-bold absolute right-4 bottom-4 md:right-0 md:bottom-0 md:translate-x-[20%] md:translate-y-[20%] select-none parallax-text">Idea</h2>
                 <div class="z-10 max-w-2xl relative px-2">
                     <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-4 block border border-red-900/50 w-fit px-3 py-1 rounded-full">PHASE 01</span>
-                    <h3 class="text-3xl md:text-6xl font-light mb-4 md:mb-6 text-white">Koncepció</h3>
+                    <h3 class="text-3xl md:text-6xl font-light mb-4 md:mb-6 text-white cipher-text" data-text="Koncepció">Koncepció</h3>
                     <p class="text-base md:text-lg text-gray-400 font-light">Mielőtt kamerát ragadunk, lebontjuk az üzenetet az atomjaira.</p>
                 </div>
             </div>
@@ -397,7 +504,7 @@
                  <h2 class="font-display text-[25vw] md:text-[18vw] leading-none text-white/5 uppercase font-bold absolute left-4 top-4 md:left-0 md:top-0 md:-translate-x-[20%] md:-translate-y-[20%] select-none parallax-text">Act</h2>
                 <div class="z-10 max-w-2xl md:ml-auto md:text-right relative px-2">
                     <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-4 block md:inline-block border border-red-900/50 w-fit px-3 py-1 rounded-full">PHASE 02</span>
-                    <h3 class="text-3xl md:text-6xl font-light mb-4 md:mb-6 text-white">Forgatás</h3>
+                    <h3 class="text-3xl md:text-6xl font-light mb-4 md:mb-6 text-white cipher-text" data-text="Forgatás">Forgatás</h3>
                     <p class="text-base md:text-lg text-gray-400 font-light">Nincs felesleges mozdulat, csak a tökéletes pillanat vadászata.</p>
                 </div>
             </div>
@@ -408,7 +515,7 @@
                 <div class="absolute inset-0 bg-black/50"></div>
                 <div class="z-10 text-center relative px-4">
                     <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-6 block border border-red-900/50 w-fit mx-auto px-3 py-1 rounded-full bg-black">PHASE 03</span>
-                    <h3 class="text-3xl md:text-7xl font-display font-bold mb-6 text-white uppercase tracking-widest">Utómunka</h3>
+                    <h3 class="text-3xl md:text-7xl font-display font-bold mb-6 text-white uppercase tracking-widest cipher-text" data-text="Utómunka">Utómunka</h3>
                 </div>
             </div>
         </div>
@@ -425,8 +532,8 @@
         <div class="work-container relative pb-20 px-3 md:px-10">
             
             <div class="work-card group sticky top-20 md:top-20 h-[65vh] md:h-[80vh] w-full mb-12 md:mb-20 origin-top transform-gpu overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-[#111]">
-                <div class="absolute inset-0 z-0">
-                    <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.hdcarwallpapers.com%2Fdownload%2Fporsche_911_gt3_8k-5120x2880.jpg&f=1&nofb=1&ipt=9fa36aebf5858ea580cdc3095cad3efb5b1113d9e54e139ecee442b1e126bdd8" alt="Apex Hunter" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 group-hover:opacity-0 z-10">
+                <div class="absolute inset-0 z-0 overflow-hidden">
+                    <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.hdcarwallpapers.com%2Fdownload%2Fporsche_911_gt3_8k-5120x2880.jpg&f=1&nofb=1&ipt=9fa36aebf5858ea580cdc3095cad3efb5b1113d9e54e139ecee442b1e126bdd8" alt="Apex Hunter" class="parallax-img absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 group-hover:opacity-0 z-10">
                     <video muted loop playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-60 transition-opacity duration-700 z-0 scale-105 group-hover:scale-100">
                         <source src="https://cdn.pixabay.com/video/2019/03/03/21770-321216454_large.mp4" type="video/mp4">
                     </video>
@@ -457,8 +564,8 @@
             </div>
 
             <div class="work-card group sticky top-20 md:top-20 h-[65vh] md:h-[80vh] w-full mb-12 md:mb-20 origin-top transform-gpu overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-[#111]">
-                <div class="absolute inset-0 z-0">
-                    <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000" alt="Velvet Silk" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 group-hover:opacity-0 z-10">
+                <div class="absolute inset-0 z-0 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000" alt="Velvet Silk" class="parallax-img absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 group-hover:opacity-0 z-10">
                     <video muted loop playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-60 transition-opacity duration-700 z-0">
                         <source src="https://assets.mixkit.co/videos/32764/32764-720.mp4" type="video/mp4">
                     </video>
@@ -489,8 +596,8 @@
             </div>
 
              <div class="work-card group sticky top-20 md:top-20 h-[65vh] md:h-[80vh] w-full mb-12 md:mb-20 origin-top transform-gpu overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-[#111]">
-                <div class="absolute inset-0 z-0">
-                     <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000" alt="Neural Link" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 group-hover:opacity-0 z-10">
+                <div class="absolute inset-0 z-0 overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000" alt="Neural Link" class="parallax-img absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 group-hover:opacity-0 z-10">
                     <video muted loop playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-60 transition-opacity duration-700 z-0">
                         <source src="https://cdn.pixabay.com/video/2021/09/11/88226-606079087_large.mp4" type="video/mp4">
                     </video>
@@ -527,7 +634,7 @@
         <div class="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-24">
             <div>
                 <span class="text-red-600 font-display text-[10px] md:text-xs tracking-widest mb-4 block">BEHIND THE SCENES</span>
-                <h2 class="font-display text-4xl md:text-7xl text-white">THE<br><span class="text-gray-700">CREW</span></h2>
+                <h2 class="font-display text-4xl md:text-7xl text-white">THE<br><span class="text-gray-700 cipher-text" data-text="CREW">CREW</span></h2>
             </div>
             <p class="text-gray-500 max-w-sm text-sm md:text-base mt-6 md:mt-0 text-justify md:text-right font-light">
                 Egy maroknyi fanatikus, akik a tökéletesség megszállottjai. 
@@ -539,11 +646,11 @@
             <div class="team-card group cursor-pointer magnetic-wrap">
                 <div class="magnetic-item">
                     <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale md:grayscale group-hover:grayscale-0 transition-all duration-700">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img parallax-img w-full h-full object-cover object-center transform scale-100 transition-transform duration-1000">
                     </div>
                     <div class="border-t border-white/20 pt-4 flex justify-between items-end">
                         <div>
-                            <h3 class="font-display text-xl md:text-2xl text-white mb-1">Kovács Dávid</h3>
+                            <h3 class="font-display text-xl md:text-2xl text-white mb-1 cipher-text" data-text="Kovács Dávid">Kovács Dávid</h3>
                             <p class="text-[10px] md:text-xs tracking-widest text-gray-500 font-display uppercase">Creative Director</p>
                         </div>
                     </div>
@@ -552,11 +659,11 @@
              <div class="team-card group cursor-pointer md:mt-16 magnetic-wrap">
                 <div class="magnetic-item">
                     <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale md:grayscale group-hover:grayscale-0 transition-all duration-700">
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img parallax-img w-full h-full object-cover object-center transform scale-100 transition-transform duration-1000">
                     </div>
                     <div class="border-t border-white/20 pt-4 flex justify-between items-end">
                         <div>
-                            <h3 class="font-display text-xl md:text-2xl text-white mb-1">Nagy Anna</h3>
+                            <h3 class="font-display text-xl md:text-2xl text-white mb-1 cipher-text" data-text="Nagy Anna">Nagy Anna</h3>
                             <p class="text-[10px] md:text-xs tracking-widest text-gray-500 font-display uppercase">D.O.P</p>
                         </div>
                     </div>
@@ -565,11 +672,11 @@
              <div class="team-card group cursor-pointer md:mt-32 magnetic-wrap">
                 <div class="magnetic-item">
                     <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale md:grayscale group-hover:grayscale-0 transition-all duration-700">
-                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img parallax-img w-full h-full object-cover object-center transform scale-100 transition-transform duration-1000">
                     </div>
                     <div class="border-t border-white/20 pt-4 flex justify-between items-end">
                         <div>
-                            <h3 class="font-display text-xl md:text-2xl text-white mb-1">Tóth Márk</h3>
+                            <h3 class="font-display text-xl md:text-2xl text-white mb-1 cipher-text" data-text="Tóth Márk">Tóth Márk</h3>
                             <p class="text-[10px] md:text-xs tracking-widest text-gray-500 font-display uppercase">Lead Editor</p>
                         </div>
                     </div>
@@ -615,16 +722,23 @@
         // --- SETUP ---
         gsap.registerPlugin(ScrollTrigger);
 
+        // Making the scroll heavier for cinematic feel
         const lenis = new Lenis({
-            duration: 1.2,
+            duration: 1.5, // Increased for weight
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
             smooth: true,
-            // Disable heavy smoothing on mobile if desired, but Lenis usually handles it well
-            touchMultiplier: 2
+            touchMultiplier: 1.5
         });
+
         function raf(time) {
             lenis.raf(time);
             requestAnimationFrame(raf);
+            
+            // Sync Scroll Progress Bar
+            const scroll = lenis.scroll;
+            const height = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scroll / height) * 100;
+            document.querySelector('.scroll-bar').style.height = `${progress}%`;
         }
         requestAnimationFrame(raf);
 
@@ -655,7 +769,6 @@
         }
 
         // --- OPTIMIZED CURSOR (Only active on desktop) ---
-        // We use CSS to hide it, but let's pause JS logic on mobile to save CPU
         const isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
         if (isDesktop) {
@@ -693,7 +806,7 @@
             });
         }
 
-        // Magnetic Effect - Works on both touch and mouse, but subtle on touch
+        // Magnetic Effect
         document.querySelectorAll('.magnetic-wrap').forEach(wrap => {
             const item = wrap.querySelector('.magnetic-item');
             wrap.addEventListener('mousemove', (e) => {
@@ -713,7 +826,121 @@
             });
         });
 
-        // --- DOT GRID SYSTEM (Only Init on Desktop to save mobile battery) ---
+        // --- TEXT SCRUB REVEAL ---
+        const scrubText = document.querySelector('.reveal-text-scrub');
+        if (scrubText) {
+            const words = scrubText.innerText.split(' ');
+            scrubText.innerHTML = '';
+            words.forEach(word => {
+                const span = document.createElement('span');
+                span.classList.add('reveal-word', 'inline-block', 'mr-2');
+                span.innerText = word;
+                scrubText.appendChild(span);
+            });
+            
+            gsap.to('.reveal-word', {
+                opacity: 1,
+                stagger: 0.1,
+                scrollTrigger: {
+                    trigger: scrubText,
+                    start: "top 80%",
+                    end: "bottom 50%",
+                    scrub: true
+                }
+            });
+        }
+
+        // --- NEW: CREATIVE ELEMENT - CIPHER/DECODER TEXT EFFECT ---
+        // Decodes text with random characters on scroll
+        const cipherChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+        
+        function animateCipher(element) {
+            const originalText = element.getAttribute("data-text");
+            let iterations = 0;
+            
+            const interval = setInterval(() => {
+                element.innerText = originalText
+                    .split("")
+                    .map((letter, index) => {
+                        if (index < iterations) {
+                            return originalText[index];
+                        }
+                        return cipherChars[Math.floor(Math.random() * cipherChars.length)];
+                    })
+                    .join("");
+                
+                if (iterations >= originalText.length) {
+                    clearInterval(interval);
+                }
+                
+                iterations += 1 / 3; // Speed control
+            }, 30);
+        }
+
+        // Trigger Cipher on scroll
+        const cipherElements = document.querySelectorAll('.cipher-text');
+        cipherElements.forEach(el => {
+            ScrollTrigger.create({
+                trigger: el,
+                start: "top 85%",
+                onEnter: () => animateCipher(el)
+            });
+        });
+
+
+        // --- FIXED: IMAGE SCALING (Zoom Out) INSTEAD OF SHIFTING ---
+        // This replaces the parallax shift with a subtle scale effect.
+        // It stays perfectly centered and never cuts off.
+        gsap.utils.toArray('.parallax-img').forEach(img => {
+            gsap.fromTo(img, 
+                { scale: 1.2 }, // Start slightly zoomed in
+                { 
+                    scale: 1.0, // Zoom out to normal
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: img.parentElement,
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: true
+                    }
+                }
+            );
+        });
+
+        // --- MARQUEE ANIMATION ---
+        const marqueeContent = document.querySelector('.marquee-content');
+        if(marqueeContent) {
+            // Duplicate content for seamless loop
+            const clone = marqueeContent.cloneNode(true);
+            document.querySelector('.marquee-container').appendChild(clone);
+            
+            let xPos = 0;
+            
+            gsap.to('.marquee-content', {
+                xPercent: -100,
+                repeat: -1,
+                duration: 20,
+                ease: "linear"
+            }).timeScale(1);
+
+            // Speed up on scroll
+            let scrollTimeout;
+            ScrollTrigger.create({
+                onUpdate: (self) => {
+                    const velocity = Math.abs(self.getVelocity());
+                    const timeScale = 1 + (velocity / 100); 
+                    gsap.to(gsap.getTweensOf('.marquee-content'), { timeScale: timeScale, duration: 0.2 });
+                    
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        gsap.to(gsap.getTweensOf('.marquee-content'), { timeScale: 1, duration: 0.5 });
+                    }, 100);
+                }
+            });
+        }
+
+
+        // --- DOT GRID SYSTEM ---
         if (isDesktop && window.innerWidth > 768) {
             class DotGrid {
                 constructor(canvas) {
@@ -826,35 +1053,7 @@
             });
         }
 
-        // --- SPLIT TEXT ANIMATION ---
-        document.querySelectorAll('.split-text-anim').forEach(el => {
-            const text = el.innerText;
-            el.innerHTML = '';
-            text.split(' ').forEach(word => {
-                const wordSpan = document.createElement('span');
-                wordSpan.className = 'char-wrap mr-1.5';
-                word.split('').forEach(char => {
-                    const charSpan = document.createElement('span');
-                    charSpan.className = 'char inline-block';
-                    charSpan.innerText = char;
-                    wordSpan.appendChild(charSpan);
-                });
-                el.appendChild(wordSpan);
-            });
-        });
-
-        gsap.utils.toArray('.split-text-anim').forEach(text => {
-            const chars = text.querySelectorAll('.char');
-            gsap.to(chars, {
-                y: 0,
-                duration: 1,
-                stagger: 0.015,
-                ease: "power3.out",
-                scrollTrigger: { trigger: text, start: "top 85%" }
-            });
-        });
-
-        // --- RESPONSIVE SCROLL ANIMATIONS (MatchMedia) ---
+        // --- RESPONSIVE SCROLL ANIMATIONS ---
         ScrollTrigger.matchMedia({
             
             // DESKTOP ONLY
@@ -901,19 +1100,16 @@
             }
         });
 
-        // --- STACKING CARDS ANIMATION (Works on both, but adjusted) ---
+        // --- STACKING CARDS ANIMATION ---
         const cards = gsap.utils.toArray(".work-card");
         
         cards.forEach((card, index) => {
             const video = card.querySelector('video');
 
-            // Video Play Logic - Mobile uses Intersection Observer instead of Hover for better performance/logic
             if (isDesktop) {
                 card.addEventListener('mouseenter', () => video && video.play());
                 card.addEventListener('mouseleave', () => video && video.pause());
             } else {
-                // Simple play on tap/scroll could be added here, but keeping it simple for now
-                // Optional: Autoplay when in viewport on mobile
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if(video) {
@@ -975,7 +1171,6 @@
         });
 
         // --- THREE.JS BACKGROUND ---
-        // Optimization: Create shader but ensure it fits screen
         const scene = new THREE.Scene();
         const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
         const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
@@ -1022,7 +1217,6 @@
         window.addEventListener('resize', resize);
 
         function animate() {
-            // Slower animation on mobile to save battery
             uniforms.u_time.value += isDesktop ? 0.01 : 0.005; 
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
@@ -1041,7 +1235,7 @@
                 mobileMenu.classList.remove('translate-y-full');
                 gsap.to(".mobile-link", { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.3 });
                 menuBtn.innerText = "CLOSE";
-                lenis.stop(); // Stop scrolling when menu is open
+                lenis.stop();
             } else {
                 mobileMenu.classList.add('translate-y-full');
                 gsap.to(".mobile-link", { opacity: 0, y: 20, duration: 0.2 });
@@ -1078,6 +1272,17 @@
 
         // --- FOOTER CREDITS SCROLL ---
         gsap.to("#footer-credits", { yPercent: -100, duration: 20, repeat: -1, ease: "none" });
+
+        // --- NEW: GLITCH EFFECT TRIGGER ---
+        const glitchText = document.querySelector('.hero-title-line.glitch-text');
+        if (glitchText) {
+            setInterval(() => {
+                glitchText.classList.add('glitch-active');
+                setTimeout(() => {
+                    glitchText.classList.remove('glitch-active');
+                }, 500 + Math.random() * 500); // Random duration between 0.5s and 1s
+            }, 5000 + Math.random() * 3000); // Random interval between 5s and 8s
+        }
     </script>
 </body>
 </html>
