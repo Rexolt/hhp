@@ -3,1286 +3,772 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HALOMOTION | Cinematic Production</title>
+    <title>Mészáros Bálint | The Void Gallery</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Libraries -->
+    <!-- Main Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Loaders & Post Processing -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
+    
+    <!-- Post Processing Scripts (Bloom) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'halo-red': '#dc2626',
-                        'halo-black': '#050505',
-                        'halo-dark': '#0a0a0a'
+                        glass: 'rgba(255, 255, 255, 0.05)',
+                        border: 'rgba(255, 255, 255, 0.1)',
+                        accent: '#ffffff',
                     },
                     fontFamily: {
-                        'sans': ['Cormorant Garamond', 'serif'],
-                        'display': ['Syncopate', 'sans-serif']
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Cinzel', 'serif'],
                     },
-                    screens: {
-                        'xs': '375px',
-                        'sm': '640px',
-                        'md': '768px',
-                        'lg': '1024px',
-                        'xl': '1280px',
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
                     }
                 }
             }
         }
     </script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
 
     <style>
-        :root {
-            --bg-color: #050505;
-            --text-color: #e0e0e0;
-        }
-
-        html.lenis, html.lenis body { height: auto; }
-        .lenis.lenis-smooth { scroll-behavior: auto !important; }
-        .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
-        .lenis.lenis-stopped { overflow: hidden; }
-
         body {
-            margin: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Cormorant Garamond', serif;
+            background-color: #030303;
+            color: #ffffff;
             overflow-x: hidden;
-            width: 100%;
-            cursor: auto; 
-            -webkit-tap-highlight-color: transparent;
+            margin: 0;
         }
 
-        @media (hover: hover) and (pointer: fine) {
-            body { cursor: none; }
-        }
-
-        /* --- SCROLL PROGRESS --- */
-        .scroll-progress {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100vh;
-            background: rgba(255, 255, 255, 0.05);
-            z-index: 9940;
-        }
-        .scroll-bar {
-            width: 100%;
-            height: 0%;
-            background: #dc2626;
-            display: block;
-        }
-
-        /* --- PRELOADER --- */
-        #preloader {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #000;
-            z-index: 999999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        .loader-bar-bg {
-            width: 200px;
-            height: 1px;
-            background: rgba(255,255,255,0.2);
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        .loader-bar {
-            position: absolute;
-            top: 0; left: 0;
-            height: 100%;
-            width: 0%;
-            background: #fff;
-        }
-        .counter {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            font-family: 'Syncopate', sans-serif;
-            font-size: 14vw; 
-            font-weight: 700;
-            color: #111;
-            -webkit-text-stroke: 1px rgba(255,255,255,0.2);
-            line-height: 1;
-        }
-        @media (min-width: 768px) {
-            .counter { font-size: 80px; }
-        }
-
-        /* --- CURSOR --- */
-        .cursor-dot, .cursor-outline, .cursor-label {
-            display: none;
-        }
-        @media (hover: hover) and (pointer: fine) {
-            .cursor-dot, .cursor-outline, .cursor-label {
-                display: block;
-                position: fixed;
-                top: 0; left: 0;
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: 100000;
-                transform: translate(-50%, -50%);
-                mix-blend-mode: exclusion;
-            }
-            .cursor-dot { width: 6px; height: 6px; background-color: white; }
-            .cursor-outline {
-                width: 40px; height: 40px;
-                border: 1px solid rgba(255, 255, 255, 0.5);
-                transition: width 0.3s, height 0.3s, background-color 0.3s;
-            }
-            .cursor-label {
-                transform: translate(-50%, -250%);
-                z-index: 100001;
-                font-family: 'Syncopate', sans-serif;
-                font-size: 9px;
-                letter-spacing: 0.3em;
-                text-transform: uppercase;
-                color: #fff;
-                opacity: 0;
-                mix-blend-mode: exclusion;
-            }
-        }
-
-        /* --- ELEMENTS --- */
-        #hero-video-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            z-index: 0;
-        }
-        #hero-video {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            opacity: 0.5;
-            filter: grayscale(100%) contrast(1.2);
-            transform: scale(1.1);
-        }
-
+        /* THREE.JS BACKGROUND */
         #canvas-container {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: -1;
-            opacity: 0.15;
-            pointer-events: none;
-        }
-
-        /* Horizontal Scroll Logic */
-        .horizontal-section {
-            width: 100%;
-            height: auto;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .panel {
-            width: 100%;
-            min-height: 80vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 2rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            background: #050505;
-            flex-shrink: 0;
-        }
-        
-        @media (min-width: 768px) {
-            .horizontal-section {
-                width: 300%;
-                height: 100vh;
-                flex-direction: row;
-                flex-wrap: nowrap;
-            }
-            .panel {
-                width: 100vw;
-                height: 100vh;
-                padding: 4rem;
-                border-bottom: none;
-                border-right: 1px solid rgba(255,255,255,0.05);
-            }
-        }
-
-        .grain {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 9900;
-            opacity: 0.25;
-            animation: grainShift 8s steps(10) infinite alternate;
-        }
-        @keyframes grainShift {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-24px, 18px); }
-        }
-
-        .magnetic-wrap { display: inline-block; position: relative; z-index: 50; }
-        .char-wrap { display: inline-block; overflow: hidden; }
-        .char { display: inline-block; }
-        
-        /* New Text Reveal Styles */
-        .reveal-word {
-            opacity: 0.1;
-            transition: opacity 0.1s;
-        }
-        
-        /* Marquee */
-        .marquee-container {
-            position: relative;
-            overflow: hidden;
-            background: #0a0a0a;
-            padding: 20px 0;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .marquee-content {
-            display: flex;
-            width: fit-content;
-            white-space: nowrap;
-        }
-        .marquee-item {
-            font-family: 'Syncopate', sans-serif;
-            font-size: 3vw;
-            font-weight: 700;
-            color: transparent;
-            -webkit-text-stroke: 1px rgba(255,255,255,0.3);
-            text-transform: uppercase;
-            padding-right: 4vw;
-        }
-
-        .dot-canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0; left: 0; width: 100%; height: 100vh;
             z-index: 0;
             pointer-events: none;
-            opacity: 0;
+            opacity: 0; transition: opacity 1.5s ease;
+        }
+
+        /* TYPOGRAPHY */
+        .watermark {
+            position: absolute;
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            color: rgba(255,255,255,0.03);
+            line-height: 0.8;
+            pointer-events: none;
+            z-index: -1;
+            white-space: nowrap;
+        }
+
+        /* GLASS ELEMENTS */
+        .glass-box {
+            background: rgba(10, 10, 10, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* PROJECT IMAGE */
+        .project-card {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .project-card:hover img {
+            transform: scale(1.1);
+        }
+        .project-card img {
+            transition: transform 0.8s ease;
+        }
+
+        /* SIDEBAR NAV (Desktop) */
+        .sidebar {
+            position: fixed;
+            right: 0; top: 0; height: 100vh;
+            width: 80px;
+            border-left: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+        }
+        .nav-dot {
+            width: 6px; height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .nav-dot.active {
+            background: white;
+            box-shadow: 0 0 10px white;
+            transform: scale(1.5);
+        }
+
+        /* MOBILE NAV (Bottom Bar) */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            z-index: 60;
+        }
+        .mobile-nav a {
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 2px;
+            transition: color 0.3s;
+        }
+        .mobile-nav a.active-mob {
+            color: white;
+        }
+
+        /* PROGRESS LINE */
+        .progress-line {
+            position: fixed; left: 40px; top: 50%; transform: translateY(-50%);
+            width: 1px; height: 200px;
+            background: rgba(255,255,255,0.1);
+            z-index: 50;
+        }
+        .progress-indicator {
+            position: absolute; top: 0; left: -1px;
+            width: 3px; height: 0%;
+            background: white;
+            transition: height 0.1s;
+        }
+
+        /* LOADER */
+        #loader {
+            position: fixed; inset: 0; background: #000; z-index: 100;
+            display: flex; flex-col; gap: 1rem; align-items: center; justify-content: center;
+            color: white; font-family: 'Cinzel', serif; letter-spacing: 0.2em;
             transition: opacity 0.5s ease;
         }
-        @media (min-width: 768px) {
-            .service-card:hover .dot-canvas { opacity: 1; }
+        .loader-bar {
+            width: 100px; height: 1px; background: rgba(255,255,255,0.2);
+            position: relative; overflow: hidden;
+        }
+        .loader-progress {
+            position: absolute; left: 0; top: 0; height: 100%; width: 0%;
+            background: white; transition: width 0.2s;
         }
 
-        /* Decoder / Cipher Effect */
-        .cipher-text {
-            opacity: 1;
-        }
-
-        .mobile-visible { opacity: 1 !important; transform: translateY(0) !important; }
-
-        /* --- NEW: GLITCH EFFECT --- */
-        .glitch-text {
-            position: relative;
-        }
-        
-        .glitch-text::before,
-        .glitch-text::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-        }
-
-        .glitch-active .glitch-text::before {
-            color: #ff0000;
-            z-index: -1;
-            opacity: 0.5;
-            animation: glitch-anim-1 0.4s infinite linear alternate-reverse;
-        }
-
-        .glitch-active .glitch-text::after {
-            color: #0000ff;
-            z-index: -2;
-            opacity: 0.5;
-            animation: glitch-anim-2 0.4s infinite linear alternate-reverse;
-        }
-
-        @keyframes glitch-anim-1 {
-            0% { clip-path: polygon(0 2%, 100% 2%, 100% 5%, 0 5%); transform: translate(-2px, -1px); }
-            20% { clip-path: polygon(0 15%, 100% 15%, 100% 18%, 0 18%); transform: translate(1px, 2px); }
-            40% { clip-path: polygon(0 30%, 100% 30%, 100% 35%, 0 35%); transform: translate(-1px, -3px); }
-            60% { clip-path: polygon(0 50%, 100% 50%, 100% 55%, 0 55%); transform: translate(3px, 1px); }
-            80% { clip-path: polygon(0 75%, 100% 75%, 100% 80%, 0 80%); transform: translate(-2px, 2px); }
-            100% { clip-path: polygon(0 90%, 100% 90%, 100% 95%, 0 95%); transform: translate(1px, -1px); }
-        }
-
-        @keyframes glitch-anim-2 {
-            0% { clip-path: polygon(0 10%, 100% 10%, 100% 15%, 0 15%); transform: translate(2px, 1px); }
-            20% { clip-path: polygon(0 25%, 100% 25%, 100% 28%, 0 28%); transform: translate(-1px, -2px); }
-            40% { clip-path: polygon(0 40%, 100% 40%, 100% 45%, 0 45%); transform: translate(1px, 3px); }
-            60% { clip-path: polygon(0 60%, 100% 60%, 100% 65%, 0 65%); transform: translate(-3px, -1px); }
-            80% { clip-path: polygon(0 85%, 100% 85%, 100% 88%, 0 88%); transform: translate(2px, -2px); }
-            100% { clip-path: polygon(0 95%, 100% 95%, 100% 98%, 0 98%); transform: translate(-1px, 1px); }
-        }
     </style>
 </head>
-<body class="antialiased selection:bg-red-900 selection:text-white bg-halo-black text-gray-200">
+<body class="antialiased">
 
-    <div id="preloader">
-        <div class="loader-text font-display text-[10px] md:text-xs tracking-[0.5em] uppercase text-white mb-4 text-center px-4">
-            Loading Experience
-        </div>
-        <div class="loader-bar-bg">
-            <div class="loader-bar"></div>
-        </div>
-        <div class="counter">0%</div>
+    <!-- LOADER -->
+    <div id="loader">
+        <div>INITIALIZING VOID...</div>
+        <div class="loader-bar"><div class="loader-progress" id="load-bar"></div></div>
     </div>
 
-    <div class="scroll-progress hidden md:block">
-        <span class="scroll-bar"></span>
-    </div>
-
-    <div id="video-modal" class="fixed inset-0 z-[10000] bg-black/95 hidden flex flex-col justify-center items-center opacity-0 p-4">
-        <button id="close-modal" class="absolute top-4 right-4 md:top-8 md:right-8 text-white font-display text-xs tracking-widest z-50 hover:text-red-500 transition-colors border border-white/20 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-black magnetic-btn touch-manipulation">✕</button>
-        <div class="w-full max-w-7xl aspect-video bg-black relative shadow-2xl border-y border-white/10">
-            <video id="modal-video" class="w-full h-full object-cover" controls playsinline>
-                <source src="" type="video/mp4">
-            </video>
-        </div>
-        <div id="modal-title" class="mt-4 md:mt-8 text-lg md:text-3xl font-display text-white tracking-widest uppercase px-4 text-center"></div>
-    </div>
-
-    <div class="grain"></div>
+    <!-- 3D CANVAS -->
     <div id="canvas-container"></div>
-    <div class="cursor-dot"></div>
-    <div class="cursor-outline"></div>
-    <div class="cursor-label"></div>
 
-    <nav class="fixed top-0 left-0 w-full flex justify-between items-center p-5 md:p-8 z-[9950] mix-blend-difference text-white">
-        <a href="#" class="font-display font-bold text-lg md:text-xl tracking-widest uppercase z-[9960] magnetic-wrap">
-            <span class="magnetic-item block">HALOMOTION</span>
-        </a>
-        <div class="hidden md:flex gap-12 font-display text-xs tracking-[0.2em]">
-            <a href="#services" class="hover:text-red-500 transition-colors magnetic-wrap"><span class="magnetic-item block">Szolgáltatások</span></a>
-            <a href="#work" class="hover:text-red-500 transition-colors magnetic-wrap"><span class="magnetic-item block">Munkáink</span></a>
-            <a href="#team" class="hover:text-red-500 transition-colors magnetic-wrap"><span class="magnetic-item block">Csapat</span></a>
-            <a href="#contact" class="hover:text-red-500 transition-colors magnetic-wrap"><span class="magnetic-item block">Kapcsolat</span></a>
-        </div>
-        <button id="menu-btn" class="md:hidden z-[9960] text-white font-display text-[10px] tracking-widest border border-white/30 px-5 py-2.5 rounded-full uppercase bg-black/50 backdrop-blur-sm active:bg-white active:text-black transition-colors">MENU</button>
-    </nav>
+    <!-- PROGRESS LINE (LEFT - Desktop Only) -->
+    <div class="hidden md:block progress-line">
+        <div class="progress-indicator" id="scroll-progress"></div>
+        <div class="absolute -left-6 top-0 text-[10px] opacity-30 -rotate-90 origin-center translate-y-[-50%]">START</div>
+        <div class="absolute -left-6 bottom-0 text-[10px] opacity-30 -rotate-90 origin-center translate-y-[50%]">END</div>
+    </div>
 
-    <div id="mobile-menu" class="fixed inset-0 bg-black z-[9900] flex flex-col justify-center items-center md:hidden translate-y-full transition-transform duration-700 ease-[cubic-bezier(0.7,0,0.3,1)]">
-        <div class="flex flex-col gap-10 text-center">
-            <a href="#services" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 active:text-red-600 transition-colors opacity-0 translate-y-4">Szolgáltatások</a>
-            <a href="#work" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 active:text-red-600 transition-colors opacity-0 translate-y-4">Munkáink</a>
-            <a href="#team" class="mobile-link font-display text-3xl font-bold tracking-wider text-white hover:text-red-600 active:text-red-600 transition-colors opacity-0 translate-y-4">Csapat</a>
-            <a href="#contact" class="mobile-link font-display text-3xl font-bold tracking-wider text-red-600 transition-colors opacity-0 translate-y-4">Kapcsolat</a>
+    <!-- SIDEBAR NAV (RIGHT - Desktop Only) -->
+    <div class="hidden md:flex sidebar">
+        <a href="#hero" class="nav-dot active" data-section="hero"></a>
+        <a href="#about" class="nav-dot" data-section="about"></a>
+        <a href="#work" class="nav-dot" data-section="work"></a>
+        <a href="#contact" class="nav-dot" data-section="contact"></a>
+        
+        <div class="absolute bottom-10">
+            <a href="mailto:hello@balint.com" class="block p-2 opacity-50 hover:opacity-100 transition-opacity">
+                <i data-lucide="mail" class="w-5 h-5"></i>
+            </a>
         </div>
     </div>
 
-    <section id="hero" class="relative h-screen flex flex-col justify-center items-center text-center px-4 z-10 overflow-hidden supports-[height:100svh]:h-[100svh]">
-        <div id="hero-video-container">
-            <video id="hero-video" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1000">
-                <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4">
-            </video>
-            <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-halo-black"></div>
-        </div>
-
-        <div class="absolute top-24 right-5 md:top-32 md:right-10 z-20 font-display text-[9px] md:text-[10px] tracking-[0.3em] text-gray-200 flex items-center gap-4 uppercase">
-            <span class="flex items-center gap-2">
-                <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-600 animate-pulse"></span>
-                <span>REC</span>
-            </span>
-            <span class="opacity-70">00:00:24:12</span>
-            <span class="opacity-40 hidden md:inline">4K / 25FPS</span>
-        </div>
-
-        <div class="relative z-10 flex flex-col items-center w-full mt-10">
-            <div class="flex flex-col items-center gap-2 mb-4 md:mb-6 reveal-opacity">
-                <div class="flex items-center gap-3 md:gap-4">
-                    <div class="w-8 md:w-12 h-[1px] bg-red-600"></div>
-                    <div id="hero-tagline" class="text-[9px] md:text-sm font-display tracking-[0.3em] md:tracking-[0.4em] text-gray-300 uppercase h-4"></div>
-                    <div class="w-8 md:w-12 h-[1px] bg-red-600"></div>
-                </div>
-            </div>
-            <h1 class="font-display text-[14vw] md:text-9xl font-bold leading-[0.9] tracking-tighter mix-blend-overlay opacity-90 w-full select-none" id="hero-title">
-                <div class="overflow-hidden"><span class="hero-title-line block glitch-text" data-text="BEYOND">BEYOND</span></div>
-                <div class="overflow-hidden"><span class="hero-title-line block text-transparent glitch-text" style="-webkit-text-stroke: 1px rgba(255,255,255,0.8);" data-text="REALITY">REALITY</span></div>
-            </h1>
-            <div class="mt-8 md:mt-12 reveal-opacity magnetic-wrap">
-                 <a href="#work" class="magnetic-item inline-block border border-white/30 px-6 py-3 md:px-8 md:py-3 rounded-full text-[10px] md:text-xs font-display tracking-widest uppercase hover:bg-white hover:text-black transition-colors duration-300 active:bg-white active:text-black">Showreel</a>
-            </div>
-        </div>
-    </section>
-
-    <section class="relative py-24 px-6 md:py-40 md:px-20 bg-halo-black z-10 border-t border-white/10">
-        <div class="max-w-6xl mx-auto text-center md:text-left">
-            <span class="text-red-600 font-display text-[10px] md:text-xs tracking-widest mb-4 md:mb-8 block md:inline-block">PHILOSOPHY</span>
-            <p class="text-2xl md:text-6xl leading-[1.6] md:leading-[1.4] font-light text-white text-justify md:text-left reveal-text-scrub">
-                A HaloMotion nem csupán rögzít. Mi a csendet vesszük fel két szívdobbanás között. A képek mögött megbújó láthatatlan történeteket keressük. Nem a valóságot másoljuk, hanem újat teremtünk.
-            </p>
-        </div>
-    </section>
-
-    <div class="marquee-container">
-        <div class="marquee-content">
-            <span class="marquee-item">Cinematography</span>
-            <span class="marquee-item">Color Grading</span>
-            <span class="marquee-item">Sound Design</span>
-            <span class="marquee-item">Art Direction</span>
-            <span class="marquee-item">Visual Effects</span>
-            <span class="marquee-item">Concept Art</span>
-            <span class="marquee-item">Cinematography</span>
-            <span class="marquee-item">Color Grading</span>
-            <span class="marquee-item">Sound Design</span>
-            <span class="marquee-item">Art Direction</span>
-        </div>
+    <!-- MOBILE NAV (Visible only on mobile) -->
+    <div class="md:hidden mobile-nav">
+        <a href="#hero" class="active-mob">Kezdő</a>
+        <a href="#about">Filozófia</a>
+        <a href="#work">Munkák</a>
+        <a href="#contact">Kapcsolat</a>
     </div>
 
-    <section id="services" class="relative py-16 md:py-32 px-4 md:px-20 bg-[#080808]">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-1">
+    <main class="pb-20 md:pb-0"> <!-- Padding bottom for mobile nav -->
+
+        <!-- SECTION 1: HERO (Centered) -->
+        <section id="hero" class="h-screen w-full relative flex items-center justify-center overflow-hidden snap-section">
+            <div class="watermark text-[20vw] opacity-10" style="top: 20%; left: 50%; transform: translateX(-50%);">SCULPTOR</div>
             
-            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[300px] md:min-h-[400px] flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
-                <canvas class="dot-canvas hidden md:block"></canvas> <div class="absolute inset-0 bg-gradient-to-br from-red-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+            <div class="relative z-10 text-center mix-blend-difference px-4">
+                <p class="font-sans text-xs uppercase tracking-[0.5em] mb-6 opacity-0 animate-in" style="animation-delay: 0.5s">Creative Developer</p>
+                <!-- Responsive text size -->
+                <h1 class="font-serif text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-bold leading-none mb-2 opacity-0 animate-in" style="animation-delay: 0.7s">
+                    MÉSZÁROS BÁLINT
+                </h1>
+                <div class="w-24 h-[1px] bg-white mx-auto my-8 opacity-0 animate-in" style="animation-delay: 1s"></div>
+                <p class="font-sans text-sm md:text-base max-w-md mx-auto opacity-70 leading-relaxed opacity-0 animate-in" style="animation-delay: 1.2s">
+                    Innovatív szoftverek és modern weboldalak tervezése.
+                </p>
+            </div>
+        </section>
+
+        <!-- SECTION 2: ABOUT (Text Left, Model Right) -->
+        <section id="about" class="min-h-screen w-full relative flex items-center py-16 md:py-24 snap-section">
+            <div class="container mx-auto px-6 md:px-24 grid grid-cols-1 md:grid-cols-2 gap-12">
                 
-                <div class="flex justify-between items-start z-10 pointer-events-none"><span class="font-display text-2xl md:text-3xl font-bold text-red-600">01</span></div>
-                <div class="z-10 transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500 pointer-events-none">
-                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider cipher-text" data-text="Commercial">Commercial</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-100">Reklámfilmek, amik nem eladnak, hanem érzelmet közvetítenek.</p>
+                <!-- Left Content -->
+                <div class="relative z-10">
+                    <span class="font-sans text-xs text-white/40 uppercase tracking-widest mb-4 block">01 // Filozófia</span>
+                    
+                    <div class="glass-box p-6 md:p-12 max-w-xl opacity-0 scroll-reveal">
+                        <h2 class="font-serif text-3xl md:text-5xl mb-8 leading-tight">
+                            A kód mint <br> struktúra
+                        </h2>
+                        <p class="font-sans text-white/70 mb-6 leading-relaxed text-sm md:text-base">
+                            Legyen szó komplex matematikai algoritmusokról vagy modern webes interfészekről, a célom mindig ugyanaz: stabil, biztonságos és elegáns rendszereket építeni.
+                        </p>
+                        <p class="font-sans text-white/70 mb-8 leading-relaxed text-sm md:text-base">
+                            A szoftverfejlesztés számomra nem csak funkcionalitás, hanem mérnöki precizitás és felhasználói élmény tökéletes egyensúlya.
+                        </p>
+                        
+                        <div class="flex gap-4 border-t border-white/10 pt-6">
+                            <div class="text-center">
+                                <span class="block text-2xl font-serif font-bold">10+</span>
+                                <span class="text-[10px] uppercase tracking-wider text-white/40">Applikáció</span>
+                            </div>
+                            <div class="w-[1px] bg-white/10 h-10"></div>
+                            <div class="text-center">
+                                <span class="block text-2xl font-serif font-bold">Web</span>
+                                <span class="text-[10px] uppercase tracking-wider text-white/40">Development</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Right Side reserved for model float -->
+                <div class="hidden md:block"></div>
             </div>
-
-            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[300px] md:min-h-[400px] flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
-                <canvas class="dot-canvas hidden md:block"></canvas>
-                <div class="absolute inset-0 bg-gradient-to-br from-red-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
-
-                <div class="flex justify-between items-start z-10 pointer-events-none"><span class="font-display text-2xl md:text-3xl font-bold text-red-600">02</span></div>
-                <div class="z-10 transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500 pointer-events-none">
-                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider cipher-text" data-text="Music Video">Music Video</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-100">Vizuális szimfóniák, ahol minden vágás egy ütem.</p>
-                </div>
-            </div>
-
-            <div class="service-card group border border-white/5 bg-white/[0.02] p-8 md:p-12 min-h-[300px] md:min-h-[400px] flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
-                 <canvas class="dot-canvas hidden md:block"></canvas>
-                 <div class="absolute inset-0 bg-gradient-to-br from-red-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
-
-                <div class="flex justify-between items-start z-10 pointer-events-none"><span class="font-display text-2xl md:text-3xl font-bold text-red-600">03</span></div>
-                <div class="z-10 transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500 pointer-events-none">
-                    <h3 class="font-display text-xl md:text-3xl mb-3 md:mb-4 text-white uppercase tracking-wider cipher-text" data-text="Brand ID">Brand ID</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-100">Arculat, ami nem csak látszik, de érezhető is.</p>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <section id="method" class="relative overflow-hidden bg-halo-black">
-        <div class="horizontal-section">
-            <div class="panel flex-col items-start bg-halo-black relative border-b border-white/10 md:border-b-0">
-                <h2 class="font-display text-[25vw] md:text-[18vw] leading-none text-white/5 uppercase font-bold absolute right-4 bottom-4 md:right-0 md:bottom-0 md:translate-x-[20%] md:translate-y-[20%] select-none parallax-text">Idea</h2>
-                <div class="z-10 max-w-2xl relative px-2">
-                    <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-4 block border border-red-900/50 w-fit px-3 py-1 rounded-full">PHASE 01</span>
-                    <h3 class="text-3xl md:text-6xl font-light mb-4 md:mb-6 text-white cipher-text" data-text="Koncepció">Koncepció</h3>
-                    <p class="text-base md:text-lg text-gray-400 font-light">Mielőtt kamerát ragadunk, lebontjuk az üzenetet az atomjaira.</p>
-                </div>
-            </div>
-            <div class="panel flex-col items-start bg-[#050505] relative border-b border-white/10 md:border-b-0">
-                 <h2 class="font-display text-[25vw] md:text-[18vw] leading-none text-white/5 uppercase font-bold absolute left-4 top-4 md:left-0 md:top-0 md:-translate-x-[20%] md:-translate-y-[20%] select-none parallax-text">Act</h2>
-                <div class="z-10 max-w-2xl md:ml-auto md:text-right relative px-2">
-                    <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-4 block md:inline-block border border-red-900/50 w-fit px-3 py-1 rounded-full">PHASE 02</span>
-                    <h3 class="text-3xl md:text-6xl font-light mb-4 md:mb-6 text-white cipher-text" data-text="Forgatás">Forgatás</h3>
-                    <p class="text-base md:text-lg text-gray-400 font-light">Nincs felesleges mozdulat, csak a tökéletes pillanat vadászata.</p>
-                </div>
-            </div>
-            <div class="panel flex-col items-center bg-black relative">
-                <div class="absolute inset-0 w-full h-full overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000" class="w-full h-full object-cover opacity-20 mix-blend-screen scale-110" data-scroll-speed="0.5">
-                </div>
-                <div class="absolute inset-0 bg-black/50"></div>
-                <div class="z-10 text-center relative px-4">
-                    <span class="text-red-600 text-[10px] md:text-xs tracking-widest font-display mb-6 block border border-red-900/50 w-fit mx-auto px-3 py-1 rounded-full bg-black">PHASE 03</span>
-                    <h3 class="text-3xl md:text-7xl font-display font-bold mb-6 text-white uppercase tracking-widest cipher-text" data-text="Utómunka">Utómunka</h3>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="work" class="relative bg-[#050505] z-10">
-        <div class="px-6 md:px-20 py-16 md:py-20 pb-10">
-            <span class="text-red-600 font-display text-[10px] md:text-xs tracking-widest mb-4 block">PORTFOLIO</span>
-            <h2 class="font-display text-4xl md:text-8xl leading-[0.9] text-white">
-                SELECTED <span class="text-transparent" style="-webkit-text-stroke: 1px rgba(255,255,255,0.5);">WORKS</span>
-            </h2>
-        </div>
-
-        <div class="work-container relative pb-20 px-3 md:px-10">
             
-            <div class="work-card group sticky top-20 md:top-20 h-[65vh] md:h-[80vh] w-full mb-12 md:mb-20 origin-top transform-gpu overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-[#111]">
-                <div class="absolute inset-0 z-0 overflow-hidden">
-                    <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.hdcarwallpapers.com%2Fdownload%2Fporsche_911_gt3_8k-5120x2880.jpg&f=1&nofb=1&ipt=9fa36aebf5858ea580cdc3095cad3efb5b1113d9e54e139ecee442b1e126bdd8" alt="Apex Hunter" class="parallax-img absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 group-hover:opacity-0 z-10">
-                    <video muted loop playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-60 transition-opacity duration-700 z-0 scale-105 group-hover:scale-100">
-                        <source src="https://cdn.pixabay.com/video/2019/03/03/21770-321216454_large.mp4" type="video/mp4">
-                    </video>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 z-10 pointer-events-none"></div>
-                </div>
+            <div class="watermark text-[15vw] opacity-5 right-0 bottom-0 rotate-90 origin-bottom-right">GENESIS</div>
+        </section>
+
+        <!-- SECTION 3: WORK (Text Right, Model Left) -->
+        <section id="work" class="min-h-screen w-full relative flex flex-col justify-center py-16 md:py-24 snap-section">
+            <div class="container mx-auto px-6 md:px-24 z-10">
                 
-                <div class="absolute top-4 left-4 right-4 md:top-6 md:left-6 md:right-6 flex justify-between items-center z-20 pointer-events-none mix-blend-difference">
-                    <div class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-600 rounded-full animate-pulse"></div>
-                        <span class="font-display text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-white">REC • 01</span>
-                    </div>
-                    <span class="font-display text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-white">4K RAW</span>
-                </div>
-
-                <div class="absolute bottom-0 left-0 w-full p-5 md:p-12 z-20 flex flex-col md:flex-row justify-between md:items-end gap-4 md:gap-6 pointer-events-none">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                     <div>
-                        <h3 class="font-display text-3xl md:text-8xl font-bold uppercase text-white mb-1 md:mb-2 leading-none">Apex Hunter</h3>
-                        <p class="font-sans text-gray-400 text-sm md:text-lg italic">Automotive / Commercial</p>
+                        <span class="font-sans text-xs text-white/40 uppercase tracking-widest mb-2 block">02 // Portfólió</span>
+                        <h2 class="font-serif text-3xl md:text-6xl">Szoftverek</h2>
                     </div>
-                    <div class="magnetic-wrap pointer-events-auto">
-                        <button class="view-case-btn magnetic-item w-full md:w-auto px-6 py-3 md:px-8 md:py-3 border border-white/30 rounded-full text-xs font-display tracking-widest uppercase hover:bg-white hover:text-black active:bg-white active:text-black transition-colors bg-black/50 backdrop-blur-sm text-white"
-                                data-video="https://assets.mixkit.co/videos/preview/mixkit-racing-car-driving-on-a-track-4034-large.mp4"
-                                data-title="Apex Hunter">
-                            View Case
-                        </button>
+                    <div class="text-left md:text-right max-w-xs">
+                        <p class="font-sans text-xs text-white/60">
+                            Komplex asztali alkalmazások és rendszereszközök.
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            <div class="work-card group sticky top-20 md:top-20 h-[65vh] md:h-[80vh] w-full mb-12 md:mb-20 origin-top transform-gpu overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-[#111]">
-                <div class="absolute inset-0 z-0 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000" alt="Velvet Silk" class="parallax-img absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 group-hover:opacity-0 z-10">
-                    <video muted loop playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-60 transition-opacity duration-700 z-0">
-                        <source src="https://assets.mixkit.co/videos/32764/32764-720.mp4" type="video/mp4">
-                    </video>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 z-10 pointer-events-none"></div>
-                </div>
-
-                 <div class="absolute top-4 left-4 right-4 md:top-6 md:left-6 md:right-6 flex justify-between items-center z-20 pointer-events-none mix-blend-difference">
-                    <div class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-600 rounded-full animate-pulse"></div>
-                        <span class="font-display text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-white">REC • 02</span>
-                    </div>
-                    <span class="font-display text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-white">120 FPS</span>
-                </div>
-
-                <div class="absolute bottom-0 left-0 w-full p-5 md:p-12 z-20 flex flex-col md:flex-row justify-between md:items-end gap-4 md:gap-6 pointer-events-none">
-                    <div>
-                        <h3 class="font-display text-3xl md:text-8xl font-bold uppercase text-white mb-1 md:mb-2 leading-none">Velvet Silk</h3>
-                        <p class="font-sans text-gray-400 text-sm md:text-lg italic">Fashion / Brand Movie</p>
-                    </div>
-                    <div class="magnetic-wrap pointer-events-auto">
-                        <button class="view-case-btn magnetic-item w-full md:w-auto px-6 py-3 md:px-8 md:py-3 border border-white/30 rounded-full text-xs font-display tracking-widest uppercase hover:bg-white hover:text-black active:bg-white active:text-black transition-colors bg-black/50 backdrop-blur-sm text-white"
-                                data-video="https://assets.mixkit.co/videos/preview/mixkit-young-woman-in-a-field-of-flowers-1224-large.mp4"
-                                data-title="Velvet Silk">
-                            View Case
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-             <div class="work-card group sticky top-20 md:top-20 h-[65vh] md:h-[80vh] w-full mb-12 md:mb-20 origin-top transform-gpu overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-[#111]">
-                <div class="absolute inset-0 z-0 overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000" alt="Neural Link" class="parallax-img absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 group-hover:opacity-0 z-10">
-                    <video muted loop playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-60 transition-opacity duration-700 z-0">
-                        <source src="https://cdn.pixabay.com/video/2021/09/11/88226-606079087_large.mp4" type="video/mp4">
-                    </video>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 z-10 pointer-events-none"></div>
-                </div>
-
-                 <div class="absolute top-4 left-4 right-4 md:top-6 md:left-6 md:right-6 flex justify-between items-center z-20 pointer-events-none mix-blend-difference">
-                    <div class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-600 rounded-full animate-pulse"></div>
-                        <span class="font-display text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-white">REC • 03</span>
-                    </div>
-                    <span class="font-display text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-white">MACRO</span>
-                </div>
-
-                <div class="absolute bottom-0 left-0 w-full p-5 md:p-12 z-20 flex flex-col md:flex-row justify-between md:items-end gap-4 md:gap-6 pointer-events-none">
-                    <div>
-                        <h3 class="font-display text-3xl md:text-8xl font-bold uppercase text-white mb-1 md:mb-2 leading-none">Neural Link</h3>
-                        <p class="font-sans text-gray-400 text-sm md:text-lg italic">Tech / Product Reveal</p>
-                    </div>
-                    <div class="magnetic-wrap pointer-events-auto">
-                        <button class="view-case-btn magnetic-item w-full md:w-auto px-6 py-3 md:px-8 md:py-3 border border-white/30 rounded-full text-xs font-display tracking-widest uppercase hover:bg-white hover:text-black active:bg-white active:text-black transition-colors bg-black/50 backdrop-blur-sm text-white"
-                                data-video="https://cdn.pixabay.com/video/2021/09/11/88226-606079087_large.mp4"
-                                data-title="Neural Link">
-                            View Case
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <section id="team" class="relative py-16 md:py-32 px-6 md:px-20 bg-halo-black z-10 border-t border-white/10">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-24">
-            <div>
-                <span class="text-red-600 font-display text-[10px] md:text-xs tracking-widest mb-4 block">BEHIND THE SCENES</span>
-                <h2 class="font-display text-4xl md:text-7xl text-white">THE<br><span class="text-gray-700 cipher-text" data-text="CREW">CREW</span></h2>
-            </div>
-            <p class="text-gray-500 max-w-sm text-sm md:text-base mt-6 md:mt-0 text-justify md:text-right font-light">
-                Egy maroknyi fanatikus, akik a tökéletesség megszállottjai. 
-                Nálunk a "jó" a "kiváló" ellensége.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            <div class="team-card group cursor-pointer magnetic-wrap">
-                <div class="magnetic-item">
-                    <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale md:grayscale group-hover:grayscale-0 transition-all duration-700">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img parallax-img w-full h-full object-cover object-center transform scale-100 transition-transform duration-1000">
-                    </div>
-                    <div class="border-t border-white/20 pt-4 flex justify-between items-end">
-                        <div>
-                            <h3 class="font-display text-xl md:text-2xl text-white mb-1 cipher-text" data-text="Kovács Dávid">Kovács Dávid</h3>
-                            <p class="text-[10px] md:text-xs tracking-widest text-gray-500 font-display uppercase">Creative Director</p>
+                <!-- Software Projects Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+                    
+                    <!-- P1: Fxit -->
+                    <div class="project-card opacity-0 scroll-reveal">
+                        <div class="aspect-[4/5] w-full bg-white/5 relative overflow-hidden glass-box border-none group cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover" alt="Fxit">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500"></div>
+                            <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 to-transparent">
+                                <h3 class="font-serif text-2xl mb-1 text-white group-hover:text-gray-200 transition-colors">Fxit</h3>
+                                <p class="font-sans text-xs text-white/60 uppercase tracking-wider mb-2">Matematikai Függvényábrázoló</p>
+                                <div class="flex gap-2">
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Kotlin</span>
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Java</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-             <div class="team-card group cursor-pointer md:mt-16 magnetic-wrap">
-                <div class="magnetic-item">
-                    <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale md:grayscale group-hover:grayscale-0 transition-all duration-700">
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img parallax-img w-full h-full object-cover object-center transform scale-100 transition-transform duration-1000">
-                    </div>
-                    <div class="border-t border-white/20 pt-4 flex justify-between items-end">
-                        <div>
-                            <h3 class="font-display text-xl md:text-2xl text-white mb-1 cipher-text" data-text="Nagy Anna">Nagy Anna</h3>
-                            <p class="text-[10px] md:text-xs tracking-widest text-gray-500 font-display uppercase">D.O.P</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-             <div class="team-card group cursor-pointer md:mt-32 magnetic-wrap">
-                <div class="magnetic-item">
-                    <div class="team-image-container w-full aspect-[3/4] overflow-hidden bg-gray-900 mb-6 relative grayscale md:grayscale group-hover:grayscale-0 transition-all duration-700">
-                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop" alt="Member" class="team-img parallax-img w-full h-full object-cover object-center transform scale-100 transition-transform duration-1000">
-                    </div>
-                    <div class="border-t border-white/20 pt-4 flex justify-between items-end">
-                        <div>
-                            <h3 class="font-display text-xl md:text-2xl text-white mb-1 cipher-text" data-text="Tóth Márk">Tóth Márk</h3>
-                            <p class="text-[10px] md:text-xs tracking-widest text-gray-500 font-display uppercase">Lead Editor</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section id="contact" class="relative py-16 md:py-32 px-6 md:px-20 z-10 bg-halo-black">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
-            <div>
-                <h2 class="font-display text-5xl md:text-8xl mb-8 leading-none tracking-tighter">START<br><span class="text-gray-700">PROJECT</span></h2>
-                <a href="mailto:studio@halomotion.hu" class="text-lg md:text-3xl font-light text-red-600 hover:text-white transition-colors border-b border-red-900/30 pb-2 inline-block magnetic-wrap"><span class="magnetic-item">studio@halomotion.hu</span></a>
-            </div>
-            <div class="flex flex-col justify-end">
-                <form class="space-y-8">
-                    <div class="relative overflow-hidden">
-                        <input type="email" placeholder="EMAIL" class="contact-input w-full bg-transparent border-b border-gray-800 py-4 text-base md:text-lg focus:outline-none focus:border-red-600 transition-colors font-light placeholder:text-gray-700 rounded-none appearance-none text-white peer">
+                    <!-- P2: soundR -->
+                    <div class="project-card md:translate-y-12 opacity-0 scroll-reveal">
+                        <div class="aspect-[4/5] w-full bg-white/5 relative overflow-hidden glass-box border-none group cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1558486012-818198f543e9?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover" alt="soundR">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500"></div>
+                            <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 to-transparent">
+                                <h3 class="font-serif text-2xl mb-1 text-white group-hover:text-gray-200 transition-colors">soundR</h3>
+                                <p class="font-sans text-xs text-white/60 uppercase tracking-wider mb-2">Hangtorzító & UI</p>
+                                <div class="flex gap-2">
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Electron</span>
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">JS</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="relative overflow-hidden">
-                        <textarea placeholder="AZ ÖTLET" rows="3" class="contact-input w-full bg-transparent border-b border-gray-800 py-4 text-base md:text-lg focus:outline-none focus:border-red-600 transition-colors font-light placeholder:text-gray-700 rounded-none appearance-none text-white"></textarea>
+
+                    <!-- P3: SecureVault -->
+                    <div class="project-card opacity-0 scroll-reveal">
+                        <div class="aspect-[4/5] w-full bg-white/5 relative overflow-hidden glass-box border-none group cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover" alt="SecureVault">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500"></div>
+                            <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 to-transparent">
+                                <h3 class="font-serif text-2xl mb-1 text-white group-hover:text-gray-200 transition-colors">SecureVault</h3>
+                                <p class="font-sans text-xs text-white/60 uppercase tracking-wider mb-2">Biztonságos Jelszókezelő</p>
+                                <div class="flex gap-2">
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Python</span>
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Crypto</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="magnetic-wrap w-full">
-                        <button class="magnetic-item w-full py-5 bg-white text-black font-display font-bold tracking-[0.2em] hover:bg-red-600 hover:text-white active:bg-red-600 active:text-white transition-all duration-300 uppercase text-xs md:text-sm border border-transparent hover:border-red-500">Küldés</button>
+
+                    <!-- P4: QWENZ-classic -->
+                    <div class="project-card opacity-0 scroll-reveal">
+                        <div class="aspect-[4/5] w-full bg-white/5 relative overflow-hidden glass-box border-none group cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover" alt="QWENZ">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500"></div>
+                            <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 to-transparent">
+                                <h3 class="font-serif text-2xl mb-1 text-white group-hover:text-gray-200 transition-colors">QWENZ-classic</h3>
+                                <p class="font-sans text-xs text-white/60 uppercase tracking-wider mb-2">90's Style Music Player</p>
+                                <div class="flex gap-2">
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Python</span>
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Retro</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </form>
-            </div>
-        </div>
-        <div class="w-full text-center mt-20 md:mt-48 border-t border-white/5 pt-10 md:pt-20 overflow-hidden">
-             <h1 class="font-display text-[15vw] leading-none font-bold text-[#111] pointer-events-none select-none" id="footer-logo">HALOMOTION</h1>
-             <div class="mt-10 h-24 relative overflow-hidden">
-                <div id="footer-credits" class="absolute inset-x-0 bottom-[-100%] flex flex-col gap-2 text-gray-600 text-[9px] md:text-[10px] font-display tracking-[0.25em] uppercase">
-                    <span>Directed by HALOMOTION STUDIO</span>
-                    <span>Cinematography by THE CREW</span>
-                    <span>Produced in BUDAPEST</span>
-                    <span>&copy; 2024 HALOMOTION</span>
+
+                    <!-- P5: Spoty -->
+                    <div class="project-card md:translate-y-12 opacity-0 scroll-reveal">
+                        <div class="aspect-[4/5] w-full bg-white/5 relative overflow-hidden glass-box border-none group cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1512418490979-92798cec1380?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover" alt="Spoty">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500"></div>
+                            <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 to-transparent">
+                                <h3 class="font-serif text-2xl mb-1 text-white group-hover:text-gray-200 transition-colors">Spoty</h3>
+                                <p class="font-sans text-xs text-white/60 uppercase tracking-wider mb-2">Spotlight Kereső</p>
+                                <div class="flex gap-2">
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Linux</span>
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Windows</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- P6: TotalDNS -->
+                    <div class="project-card opacity-0 scroll-reveal">
+                        <div class="aspect-[4/5] w-full bg-white/5 relative overflow-hidden glass-box border-none group cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1544197150-b99a580bbc7c?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover" alt="TotalDNS">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500"></div>
+                            <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 to-transparent">
+                                <h3 class="font-serif text-2xl mb-1 text-white group-hover:text-gray-200 transition-colors">TotalDNS</h3>
+                                <p class="font-sans text-xs text-white/60 uppercase tracking-wider mb-2">DNS Kezelő</p>
+                                <div class="flex gap-2">
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Windows</span>
+                                    <span class="px-2 py-1 border border-white/20 text-[10px] uppercase">Network</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-             </div>
-        </div>
-    </section>
+
+                <!-- NEW: WEB PROJECTS SECTION -->
+                <div class="mb-8">
+                    <h2 class="font-serif text-3xl md:text-5xl mb-8">Web Projektek</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- Web P1 -->
+                        <div class="glass-box p-6 hover:bg-white/5 transition-colors cursor-pointer group opacity-0 scroll-reveal">
+                            <div class="h-40 bg-black/50 mb-4 overflow-hidden relative border border-white/10">
+                                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Web 1">
+                            </div>
+                            <h3 class="font-serif text-xl mb-2">E-Commerce Platform</h3>
+                            <p class="text-xs text-white/60 mb-4">Modern webáruház React alapokon.</p>
+                            <span class="text-[10px] border border-white/20 px-2 py-1 uppercase">React / Next.js</span>
+                        </div>
+
+                        <!-- Web P2 -->
+                        <div class="glass-box p-6 hover:bg-white/5 transition-colors cursor-pointer group opacity-0 scroll-reveal">
+                            <div class="h-40 bg-black/50 mb-4 overflow-hidden relative border border-white/10">
+                                <img src="https://images.unsplash.com/photo-1522542550221-31fd19575a2d?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Web 2">
+                            </div>
+                            <h3 class="font-serif text-xl mb-2">Corporate Landing</h3>
+                            <p class="text-xs text-white/60 mb-4">Bemutatkozó oldal pénzügyi cégnek.</p>
+                            <span class="text-[10px] border border-white/20 px-2 py-1 uppercase">GSAP / HTML</span>
+                        </div>
+
+                        <!-- Web P3 -->
+                        <div class="glass-box p-6 hover:bg-white/5 transition-colors cursor-pointer group opacity-0 scroll-reveal">
+                            <div class="h-40 bg-black/50 mb-4 overflow-hidden relative border border-white/10">
+                                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Web 3">
+                            </div>
+                            <h3 class="font-serif text-xl mb-2">Portfolio Dashboard</h3>
+                            <p class="text-xs text-white/60 mb-4">Adminisztrációs felület.</p>
+                            <span class="text-[10px] border border-white/20 px-2 py-1 uppercase">Vue / Tailwind</span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+             <div class="watermark text-[12vw] opacity-5 left-0 top-1/2 -translate-y-1/2">EXHIBITION</div>
+        </section>
+
+        <!-- SECTION 4: CONTACT (Centered with particles) -->
+        <section id="contact" class="h-screen w-full relative flex items-center justify-center snap-section">
+            <div class="glass-box p-8 md:p-20 text-center max-w-2xl relative z-10 opacity-0 scroll-reveal border border-white/20 rounded-xl md:rounded-none aspect-auto flex flex-col justify-center">
+                <p class="font-sans text-xs uppercase tracking-[0.3em] text-white/40 mb-8">Kapcsolatfelvétel</p>
+                <h2 class="font-serif text-4xl md:text-7xl mb-10">Készen állsz?</h2>
+                <a href="mailto:hello@balint.com" class="font-serif text-lg md:text-3xl border-b border-white/30 pb-2 hover:text-gray-300 hover:border-white transition-all break-all">
+                    hello@balint.com
+                </a>
+                
+                <div class="mt-12 flex justify-center gap-8">
+                    <a href="#" class="p-3 border border-white/10 rounded-full hover:bg-white hover:text-black transition-all"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    <a href="#" class="p-3 border border-white/10 rounded-full hover:bg-white hover:text-black transition-all"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    <a href="#" class="p-3 border border-white/10 rounded-full hover:bg-white hover:text-black transition-all"><i data-lucide="github" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeIn 1s ease forwards; }
+    </style>
 
     <script>
-        // --- SETUP ---
-        gsap.registerPlugin(ScrollTrigger);
+        // --- THREE.JS SETUP WITH OPTIMIZATIONS & PARTICLES ---
+        const initThreeJS = () => {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.002);
 
-        // Making the scroll heavier for cinematic feel
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            // Adjusted camera for mobile
+            if (window.innerWidth < 768) {
+                camera.position.z = 11; // Further back on mobile
+            } else {
+                camera.position.z = 6;
+            }
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            container.appendChild(renderer.domElement);
+
+            // --- HDRI ENVIRONMENT ---
+            const rgbeLoader = new THREE.RGBELoader();
+            rgbeLoader.setDataType(THREE.UnsignedByteType);
+            rgbeLoader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/royal_esplanade_1k.hdr', function(texture) {
+                const pmremGenerator = new THREE.PMREMGenerator(renderer);
+                pmremGenerator.compileEquirectangularShader();
+                const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+                scene.environment = envMap; 
+                texture.dispose();
+                pmremGenerator.dispose();
+            });
+
+            // --- LIGHTING ---
+            const ambientLight = new THREE.AmbientLight(0x111111, 0.5);
+            scene.add(ambientLight);
+
+            const rimLight = new THREE.SpotLight(0x4488ff, 6);
+            rimLight.position.set(-5, 5, -5);
+            rimLight.lookAt(0, 0, 0);
+            scene.add(rimLight);
+
+            const keyLight = new THREE.PointLight(0xffaa55, 1.5, 20);
+            keyLight.position.set(5, 2, 5);
+            scene.add(keyLight);
+
+            // --- LOAD MODEL ---
+            const loader = new THREE.GLTFLoader();
+            let headMesh = null;
+            const loaderBar = document.getElementById('load-bar');
+            const modelUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb';
+
+            // Define target color variable for lerping
+            let targetColor = new THREE.Color(0xeeeeee);
+            let targetRoughness = 0.4;
+            let targetMetalness = 0.0;
+
+            loader.load(modelUrl, (gltf) => {
+                const mesh = gltf.scene.children[0];
+                const geometry = mesh.geometry;
+                geometry.center();
+
+                const material = new THREE.MeshPhysicalMaterial({
+                    color: 0xeeeeee,
+                    metalness: 0.0,
+                    roughness: 0.4,
+                    clearcoat: 0.1,
+                    clearcoatRoughness: 0.4,
+                    envMapIntensity: 0.6,
+                    side: THREE.DoubleSide
+                });
+
+                headMesh = new THREE.Mesh(geometry, material);
+                headMesh.castShadow = true;
+                headMesh.receiveShadow = true;
+                headMesh.scale.set(0.6, 0.6, 0.6);
+                scene.add(headMesh);
+
+                document.getElementById('canvas-container').style.opacity = 1;
+                document.getElementById('loader').style.opacity = 0;
+                setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+
+            }, (xhr) => {
+                const percent = (xhr.loaded / xhr.total) * 100;
+                if(loaderBar) loaderBar.style.width = percent + '%';
+            });
+
+            // --- PARTICLES (Starfield/Dust) ---
+            const particleCount = 200;
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesPositions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                particlesPositions[i3] = (Math.random() - 0.5) * 20; 
+                particlesPositions[i3 + 1] = (Math.random() - 0.5) * 20; 
+                particlesPositions[i3 + 2] = (Math.random() - 0.5) * 10 - 5; 
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particlesPositions, 3));
+            const particlesMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.03,
+                transparent: true,
+                opacity: 0.4
+            });
+            const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particleSystem);
+
+
+            // --- POST PROCESSING ---
+            const renderScene = new THREE.RenderPass(scene, camera);
+            const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0.3;
+            bloomPass.strength = 0.3;
+            bloomPass.radius = 0.2;
+
+            const composer = new THREE.EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+
+            // --- ANIMATION VARIABLES ---
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0; 
+            let currentX = 0; 
+            let scrollY = 0;
+
+            window.addEventListener('scroll', () => {
+                scrollY = window.scrollY;
+                const h = window.innerHeight;
+                const totalH = document.body.scrollHeight - window.innerHeight;
+                const scrollPct = scrollY / totalH;
+                
+                const moveRange = window.innerWidth < 768 ? 1.5 : 2.5;
+
+                // Position Logic
+                if (scrollY < h * 0.5) {
+                    targetX = 0;
+                } else if (scrollY < h * 1.5) {
+                    targetX = moveRange; 
+                } else if (scrollY < h * 2.5) {
+                    targetX = -moveRange; 
+                } else {
+                    targetX = 0;
+                }
+
+                // --- DYNAMIC MATERIAL LOGIC ---
+                if (scrollPct < 0.33) {
+                    // Start: White Marble (Hero) -> Blue Tech (About)
+                    const t = scrollPct / 0.33;
+                    targetColor.setHex(0xeeeeee).lerp(new THREE.Color(0x3b82f6), t); // To Blue
+                    targetRoughness = 0.4 - (t * 0.2); // Becomes slightly shinier
+                    targetMetalness = t * 0.2; // Slightly metallic
+                } else if (scrollPct < 0.66) {
+                    // Mid: Blue Tech -> Neon Purple (Work)
+                    const t = (scrollPct - 0.33) / 0.33;
+                    targetColor.setHex(0x3b82f6).lerp(new THREE.Color(0xa855f7), t); // To Purple
+                    targetRoughness = 0.2 - (t * 0.1); // Shinier
+                    targetMetalness = 0.2 + (t * 0.3); // More metal
+                } else {
+                    // End: Neon Purple -> Dark Chrome (Contact)
+                    const t = (scrollPct - 0.66) / 0.34;
+                    targetColor.setHex(0xa855f7).lerp(new THREE.Color(0x222222), t); // To Dark Grey
+                    targetRoughness = 0.1 - (t * 0.1); // Almost mirror
+                    targetMetalness = 0.5 + (t * 0.5); // Full metal
+                }
+
+                const progressEl = document.getElementById('scroll-progress');
+                if(progressEl) progressEl.style.height = (scrollY / totalH) * 100 + '%';
+            });
+
+            // Touch support
+            document.addEventListener('touchmove', (e) => {
+                if(e.touches.length > 0) {
+                    const touch = e.touches[0];
+                    mouseX = (touch.clientX - window.innerWidth / 2) * 0.0005;
+                    mouseY = (touch.clientY - window.innerHeight / 2) * 0.0005;
+                }
+            }, { passive: true });
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX - window.innerWidth / 2) * 0.0005;
+                mouseY = (e.clientY - window.innerHeight / 2) * 0.0005;
+            });
+
+            const clock = new THREE.Clock();
+
+            const animate = () => {
+                requestAnimationFrame(animate);
+                const time = clock.getElapsedTime();
+                
+                if (headMesh) {
+                    // Position Lerp
+                    currentX += (targetX - currentX) * 0.05;
+                    headMesh.position.x = currentX;
+                    headMesh.rotation.y = mouseX + (time * 0.1); 
+                    headMesh.rotation.x = mouseY * 0.5;
+                    headMesh.position.y = Math.sin(time * 0.5) * 0.1;
+
+                    // Material Lerp
+                    headMesh.material.color.lerp(targetColor, 0.05);
+                    headMesh.material.roughness += (targetRoughness - headMesh.material.roughness) * 0.05;
+                    headMesh.material.metalness += (targetMetalness - headMesh.material.metalness) * 0.05;
+                }
+
+                if (particleSystem) {
+                    particleSystem.rotation.y = time * 0.05;
+                    particleSystem.rotation.x = time * 0.02;
+                }
+                
+                composer.render();
+            };
+            animate();
+
+            window.addEventListener('resize', () => {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                
+                if (width < 768) {
+                    camera.position.z = 11;
+                } else {
+                    camera.position.z = 6;
+                }
+
+                renderer.setSize(width, height);
+                composer.setSize(width, height);
+            });
+        };
+
+        initThreeJS();
+
+        // --- LENIS SCROLL ---
         const lenis = new Lenis({
-            duration: 1.5, // Increased for weight
+            duration: 1.5,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
             smooth: true,
-            touchMultiplier: 1.5
         });
-
         function raf(time) {
             lenis.raf(time);
             requestAnimationFrame(raf);
-            
-            // Sync Scroll Progress Bar
-            const scroll = lenis.scroll;
-            const height = document.documentElement.scrollHeight - window.innerHeight;
-            const progress = (scroll / height) * 100;
-            document.querySelector('.scroll-bar').style.height = `${progress}%`;
         }
         requestAnimationFrame(raf);
 
-        // --- PRELOADER ---
-        const preloader = document.getElementById('preloader');
-        const counter = document.querySelector('.counter');
-        const bar = document.querySelector('.loader-bar');
+        // --- GSAP REVEALS ---
+        gsap.registerPlugin(ScrollTrigger);
 
-        let count = 0;
-        const interval = setInterval(() => {
-            count += Math.floor(Math.random() * 5) + 1;
-            if (count > 100) count = 100;
-            counter.innerText = count + '%';
-            bar.style.width = count + '%';
-            
-            if (count === 100) {
-                clearInterval(interval);
-                revealSite();
-            }
-        }, 15);
-
-        function revealSite() {
-            const tl = gsap.timeline();
-            tl.to('.loader-text, .counter, .loader-bar-bg', { y: -50, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.inOut" })
-              .to(preloader, { height: 0, duration: 1.2, ease: "expo.inOut" })
-              .from(".hero-title-line", { yPercent: 120, duration: 1.5, ease: "power4.out", stagger: 0.1 }, "-=0.8")
-              .from(".reveal-opacity", { opacity: 0, y: 20, duration: 1 }, "-=1");
-        }
-
-        // --- OPTIMIZED CURSOR (Only active on desktop) ---
-        const isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-        if (isDesktop) {
-            const cursorDot = document.querySelector('.cursor-dot');
-            const cursorOutline = document.querySelector('.cursor-outline');
-            const cursorLabel = document.querySelector('.cursor-label');
-            
-            const dotX = gsap.quickTo(cursorDot, "x", { duration: 0.1, ease: "power3" });
-            const dotY = gsap.quickTo(cursorDot, "y", { duration: 0.1, ease: "power3" });
-            const outX = gsap.quickTo(cursorOutline, "x", { duration: 0.4, ease: "power3" });
-            const outY = gsap.quickTo(cursorOutline, "y", { duration: 0.4, ease: "power3" });
-            const labelX = gsap.quickTo(cursorLabel, "x", { duration: 0.1, ease: "power3" });
-            const labelY = gsap.quickTo(cursorLabel, "y", { duration: 0.1, ease: "power3" });
-
-            window.addEventListener('mousemove', (e) => {
-                dotX(e.clientX);
-                dotY(e.clientY);
-                outX(e.clientX);
-                outY(e.clientY);
-                labelX(e.clientX);
-                labelY(e.clientY);
-            });
-
-            // Cursor label for inputs
-            document.querySelectorAll('.contact-input').forEach(input => {
-                input.addEventListener('mouseenter', () => {
-                    cursorLabel.textContent = "WRITE";
-                    gsap.to(cursorLabel, { opacity: 1, duration: 0.2 });
-                    gsap.to(cursorOutline, { scale: 1.7, duration: 0.3 });
-                });
-                input.addEventListener('mouseleave', () => {
-                    gsap.to(cursorLabel, { opacity: 0, duration: 0.2 });
-                    gsap.to(cursorOutline, { scale: 1, duration: 0.3 });
-                });
-            });
-        }
-
-        // Magnetic Effect
-        document.querySelectorAll('.magnetic-wrap').forEach(wrap => {
-            const item = wrap.querySelector('.magnetic-item');
-            wrap.addEventListener('mousemove', (e) => {
-                const rect = wrap.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-                gsap.to(item, { x: x * 0.3, y: y * 0.3, duration: 0.3, ease: "power2.out" });
-                if(isDesktop) {
-                    gsap.to(document.querySelector('.cursor-outline'), { scale: 1.5, mixBlendMode: 'difference', duration: 0.3 });
-                }
-            });
-            wrap.addEventListener('mouseleave', () => {
-                gsap.to(item, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
-                if(isDesktop) {
-                    gsap.to(document.querySelector('.cursor-outline'), { scale: 1, duration: 0.3 });
-                }
-            });
-        });
-
-        // --- TEXT SCRUB REVEAL ---
-        const scrubText = document.querySelector('.reveal-text-scrub');
-        if (scrubText) {
-            const words = scrubText.innerText.split(' ');
-            scrubText.innerHTML = '';
-            words.forEach(word => {
-                const span = document.createElement('span');
-                span.classList.add('reveal-word', 'inline-block', 'mr-2');
-                span.innerText = word;
-                scrubText.appendChild(span);
-            });
-            
-            gsap.to('.reveal-word', {
-                opacity: 1,
-                stagger: 0.1,
-                scrollTrigger: {
-                    trigger: scrubText,
-                    start: "top 80%",
-                    end: "bottom 50%",
-                    scrub: true
-                }
-            });
-        }
-
-        // --- NEW: CREATIVE ELEMENT - CIPHER/DECODER TEXT EFFECT ---
-        // Decodes text with random characters on scroll
-        const cipherChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-        
-        function animateCipher(element) {
-            const originalText = element.getAttribute("data-text");
-            let iterations = 0;
-            
-            const interval = setInterval(() => {
-                element.innerText = originalText
-                    .split("")
-                    .map((letter, index) => {
-                        if (index < iterations) {
-                            return originalText[index];
-                        }
-                        return cipherChars[Math.floor(Math.random() * cipherChars.length)];
-                    })
-                    .join("");
-                
-                if (iterations >= originalText.length) {
-                    clearInterval(interval);
-                }
-                
-                iterations += 1 / 3; // Speed control
-            }, 30);
-        }
-
-        // Trigger Cipher on scroll
-        const cipherElements = document.querySelectorAll('.cipher-text');
-        cipherElements.forEach(el => {
-            ScrollTrigger.create({
-                trigger: el,
-                start: "top 85%",
-                onEnter: () => animateCipher(el)
-            });
-        });
-
-
-        // --- FIXED: IMAGE SCALING (Zoom Out) INSTEAD OF SHIFTING ---
-        // This replaces the parallax shift with a subtle scale effect.
-        // It stays perfectly centered and never cuts off.
-        gsap.utils.toArray('.parallax-img').forEach(img => {
-            gsap.fromTo(img, 
-                { scale: 1.2 }, // Start slightly zoomed in
-                { 
-                    scale: 1.0, // Zoom out to normal
-                    ease: "none",
+        const revealElements = document.querySelectorAll('.scroll-reveal');
+        revealElements.forEach(el => {
+            gsap.fromTo(el, 
+                { y: 50, opacity: 0 },
+                {
+                    y: 0, opacity: 1, duration: 1, ease: 'power3.out',
                     scrollTrigger: {
-                        trigger: img.parentElement,
-                        start: "top bottom",
-                        end: "bottom top",
-                        scrub: true
+                        trigger: el,
+                        start: "top 85%",
                     }
                 }
             );
         });
 
-        // --- MARQUEE ANIMATION ---
-        const marqueeContent = document.querySelector('.marquee-content');
-        if(marqueeContent) {
-            // Duplicate content for seamless loop
-            const clone = marqueeContent.cloneNode(true);
-            document.querySelector('.marquee-container').appendChild(clone);
-            
-            let xPos = 0;
-            
-            gsap.to('.marquee-content', {
-                xPercent: -100,
-                repeat: -1,
-                duration: 20,
-                ease: "linear"
-            }).timeScale(1);
+        // --- NAV HIGHLIGHT ---
+        const sections = document.querySelectorAll('section');
+        const navDots = document.querySelectorAll('.nav-dot');
+        const mobileLinks = document.querySelectorAll('.mobile-nav a');
 
-            // Speed up on scroll
-            let scrollTimeout;
-            ScrollTrigger.create({
-                onUpdate: (self) => {
-                    const velocity = Math.abs(self.getVelocity());
-                    const timeScale = 1 + (velocity / 100); 
-                    gsap.to(gsap.getTweensOf('.marquee-content'), { timeScale: timeScale, duration: 0.2 });
-                    
-                    clearTimeout(scrollTimeout);
-                    scrollTimeout = setTimeout(() => {
-                        gsap.to(gsap.getTweensOf('.marquee-content'), { timeScale: 1, duration: 0.5 });
-                    }, 100);
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
                 }
             });
-        }
 
-
-        // --- DOT GRID SYSTEM ---
-        if (isDesktop && window.innerWidth > 768) {
-            class DotGrid {
-                constructor(canvas) {
-                    this.canvas = canvas;
-                    this.ctx = canvas.getContext('2d');
-                    this.dots = [];
-                    this.width = 0;
-                    this.height = 0;
-                    this.gap = 25; 
-                    this.mouse = { x: -1000, y: -1000 };
-                    this.isActive = false;
-                    
-                    this.init();
-                    window.addEventListener('resize', () => this.resize());
-                }
-
-                init() {
-                    this.resize();
-                }
-
-                resize() {
-                    const rect = this.canvas.parentElement.getBoundingClientRect();
-                    this.width = rect.width;
-                    this.height = rect.height;
-                    this.canvas.width = this.width;
-                    this.canvas.height = this.height;
-                    this.createDots();
-                }
-
-                createDots() {
-                    this.dots = [];
-                    for (let x = 0; x < this.width; x += this.gap) {
-                        for (let y = 0; y < this.height; y += this.gap) {
-                            this.dots.push({
-                                x: x,
-                                y: y,
-                                originX: x,
-                                originY: y,
-                                size: 1.5,
-                                color: '#dc2626'
-                            });
-                        }
-                    }
-                }
-
-                updateMouse(x, y) {
-                    this.mouse.x = x;
-                    this.mouse.y = y;
-                }
-
-                start() {
-                    if (!this.isActive) {
-                        this.isActive = true;
-                        this.animate();
-                    }
-                }
-
-                stop() {
-                    this.isActive = false;
-                }
-
-                animate() {
-                    if (!this.isActive) return;
-                    
-                    this.ctx.clearRect(0, 0, this.width, this.height);
-                    
-                    for (let i = 0; i < this.dots.length; i++) {
-                        const dot = this.dots[i];
-                        
-                        const dx = this.mouse.x - dot.x;
-                        const dy = this.mouse.y - dot.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        const minDist = 100;
-                        
-                        if (dist < minDist) {
-                            const forceDirectionX = dx / dist;
-                            const forceDirectionY = dy / dist;
-                            const force = (minDist - dist) / minDist;
-                            const elastic = 0.6;
-                            
-                            dot.x -= forceDirectionX * force * 5 * elastic;
-                            dot.y -= forceDirectionY * force * 5 * elastic;
-                        } else {
-                            dot.x += (dot.originX - dot.x) * 0.1;
-                            dot.y += (dot.originY - dot.y) * 0.1;
-                        }
-
-                        this.ctx.fillStyle = dot.color;
-                        this.ctx.beginPath();
-                        this.ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
-                        this.ctx.fill();
-                    }
-                    
-                    requestAnimationFrame(() => this.animate());
-                }
-            }
-
-            document.querySelectorAll('.service-card').forEach(card => {
-                const canvas = card.querySelector('.dot-canvas');
-                if (canvas) {
-                    const grid = new DotGrid(canvas);
-                    
-                    card.addEventListener('mouseenter', () => grid.start());
-                    card.addEventListener('mouseleave', () => grid.stop());
-                    card.addEventListener('mousemove', (e) => {
-                        const rect = card.getBoundingClientRect();
-                        grid.updateMouse(e.clientX - rect.left, e.clientY - rect.top);
-                    });
+            navDots.forEach(dot => {
+                dot.classList.remove('active');
+                if (dot.getAttribute('data-section') === current) {
+                    dot.classList.add('active');
                 }
             });
-        }
 
-        // --- RESPONSIVE SCROLL ANIMATIONS ---
-        ScrollTrigger.matchMedia({
-            
-            // DESKTOP ONLY
-            "(min-width: 768px)": function() {
-                const sections = gsap.utils.toArray(".panel");
-                gsap.to(sections, {
-                    xPercent: -100 * (sections.length - 1),
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: ".horizontal-section",
-                        pin: true,
-                        scrub: 1,
-                        end: () => "+=" + document.querySelector(".horizontal-section").offsetWidth
-                    }
-                });
-
-                gsap.utils.toArray(".parallax-text").forEach(text => {
-                    gsap.to(text, {
-                        x: 100,
-                        scrollTrigger: {
-                            trigger: text.parentElement,
-                            containerAnimation: gsap.getTweensOf(sections)[0],
-                            start: "left right",
-                            end: "right left",
-                            scrub: true
-                        }
-                    });
-                });
-                
-                // Parallax for hero video
-                gsap.to("#hero-video", {
-                    yPercent: 30,
-                    ease: "none",
-                    scrollTrigger: { trigger: "body", start: "top top", end: "bottom top", scrub: true }
-                });
-            },
-            
-            // MOBILE & DESKTOP SHARED
-            "all": function() {
-                gsap.fromTo("#footer-logo", 
-                    { y: -50 },
-                    { y: 50, scrollTrigger: { trigger: "#contact", start: "top center", scrub: 1 }}
-                );
-            }
-        });
-
-        // --- STACKING CARDS ANIMATION ---
-        const cards = gsap.utils.toArray(".work-card");
-        
-        cards.forEach((card, index) => {
-            const video = card.querySelector('video');
-
-            if (isDesktop) {
-                card.addEventListener('mouseenter', () => video && video.play());
-                card.addEventListener('mouseleave', () => video && video.pause());
-            } else {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if(video) {
-                            if(entry.isIntersecting) video.play();
-                            else video.pause();
-                        }
-                    });
-                }, { threshold: 0.5 });
-                observer.observe(card);
-            }
-
-            // Stack effect
-            if (index === cards.length - 1) return;
-            const nextCard = cards[index + 1];
-
-            gsap.to(card, {
-                scale: 0.9,
-                opacity: 0.4,
-                filter: "blur(5px)",
-                ease: "none",
-                scrollTrigger: {
-                    trigger: nextCard,
-                    start: "top bottom", 
-                    end: "top 20%",
-                    scrub: true,
+            // Mobile nav highlight
+            mobileLinks.forEach(link => {
+                link.classList.remove('active-mob');
+                if(link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active-mob');
                 }
             });
         });
 
-        // --- VIDEO MODAL ---
-        const modal = document.getElementById('video-modal');
-        const modalVideo = document.getElementById('modal-video');
-        const modalTitle = document.getElementById('modal-title');
-        
-        document.querySelectorAll('.view-case-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const videoSrc = btn.getAttribute('data-video');
-                const title = btn.getAttribute('data-title');
-                if (videoSrc) {
-                    modalVideo.src = videoSrc;
-                    modalTitle.innerText = title;
-                    modal.classList.remove('hidden');
-                    lenis.stop();
-                    gsap.to(modal, { opacity: 1, duration: 0.5 });
-                    modalVideo.play();
-                }
-            });
-        });
+        lucide.createIcons();
 
-        document.getElementById('close-modal').addEventListener('click', () => {
-            gsap.to(modal, { opacity: 0, duration: 0.5, onComplete: () => {
-                modal.classList.add('hidden');
-                modalVideo.pause();
-                modalVideo.src = "";
-                lenis.start();
-            }});
-        });
-
-        // --- THREE.JS BACKGROUND ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        const uniforms = {
-            u_time: { value: 0.0 },
-            u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
-        };
-
-        const material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position, 1.0); }`,
-            fragmentShader: `
-                uniform float u_time;
-                uniform vec2 u_resolution;
-                float random(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
-                float noise(vec2 st) {
-                    vec2 i = floor(st);
-                    vec2 f = fract(st);
-                    float a = random(i);
-                    float b = random(i + vec2(1.0, 0.0));
-                    float c = random(i + vec2(0.0, 1.0));
-                    float d = random(i + vec2(1.0, 1.0));
-                    vec2 u = f * f * (3.0 - 2.0 * f);
-                    return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-                }
-                void main() {
-                    vec2 st = gl_FragCoord.xy/u_resolution.xy;
-                    float n = noise(st * 3.0 + u_time * 0.05);
-                    float fog = smoothstep(0.4, 0.6, n);
-                    gl_FragColor = vec4(vec3(0.08), fog * 0.15);
-                }
-            `,
-            transparent: true
-        });
-        scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
-
-        function resize() {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
-        }
-        window.addEventListener('resize', resize);
-
-        function animate() {
-            uniforms.u_time.value += isDesktop ? 0.01 : 0.005; 
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        // --- MENU TOGGLE ---
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
-        let isMenuOpen = false;
-
-        function toggleMenu() {
-            isMenuOpen = !isMenuOpen;
-            if(isMenuOpen) {
-                mobileMenu.classList.remove('translate-y-full');
-                gsap.to(".mobile-link", { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.3 });
-                menuBtn.innerText = "CLOSE";
-                lenis.stop();
-            } else {
-                mobileMenu.classList.add('translate-y-full');
-                gsap.to(".mobile-link", { opacity: 0, y: 20, duration: 0.2 });
-                menuBtn.innerText = "MENU";
-                lenis.start();
-            }
-        }
-
-        menuBtn.addEventListener('click', toggleMenu);
-        
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                if(isMenuOpen) toggleMenu();
-            });
-        });
-
-        // --- HERO TAGLINE ROTATOR ---
-        const taglines = ["STORY-DRIVEN FRAMES", "VISUAL POETRY", "SOUND OF SILENCE", "MOTION IN STILLNESS"];
-        let taglineIndex = 0;
-        const taglineEl = document.getElementById('hero-tagline');
-        if (taglineEl) {
-            taglineEl.textContent = taglines[0];
-            setInterval(() => {
-                const next = taglines[(++taglineIndex) % taglines.length];
-                gsap.to(taglineEl, {
-                    opacity: 0, y: 10, duration: 0.4,
-                    onComplete: () => {
-                        taglineEl.textContent = next;
-                        gsap.fromTo(taglineEl, { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.5 });
-                    }
-                });
-            }, 4000);
-        }
-
-        // --- FOOTER CREDITS SCROLL ---
-        gsap.to("#footer-credits", { yPercent: -100, duration: 20, repeat: -1, ease: "none" });
-
-        // --- NEW: GLITCH EFFECT TRIGGER ---
-        const glitchText = document.querySelector('.hero-title-line.glitch-text');
-        if (glitchText) {
-            setInterval(() => {
-                glitchText.classList.add('glitch-active');
-                setTimeout(() => {
-                    glitchText.classList.remove('glitch-active');
-                }, 500 + Math.random() * 500); // Random duration between 0.5s and 1s
-            }, 5000 + Math.random() * 3000); // Random interval between 5s and 8s
-        }
     </script>
 </body>
 </html>
